@@ -1,10 +1,8 @@
 import io
 import requests
-from bs4 import BeautifulSoup
-from PIL import Image, ImageOps
-from PIL import ImageDraw 
-from PIL import ImageFont
 import qrcode
+from bs4 import BeautifulSoup
+from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file
 app = Flask(__name__)
 
@@ -113,4 +111,4 @@ def index():
        return response 
     return render_template("index.jinja2")
 if __name__=='__main__':
-   app.run(debug=True)
+   app.run()
