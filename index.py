@@ -1,6 +1,8 @@
 import io
 import requests
 import qrcode
+import lxml
+import cchardet
 from bs4 import BeautifulSoup
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file
@@ -8,16 +10,10 @@ app = Flask(__name__)
 
 def gen_qr(article_link=""):
     page = requests.get(article_link)
-
-    soup = BeautifulSoup(page.content, 'html.parser')
-    image_tags = soup.find_all('meta', property="og:image")
-    title_tags = soup.find_all('meta', property="og:title")
-    links = []
-    for image_tag in image_tags:
-        links.append(image_tag["content"])
-
-    for title_tag in title_tags:
-        links.append(title_tag["content"])
+    soup = BeautifulSoup(page.text, 'lxml')
+    image_tags = soup.find('meta', property="og:image")
+    title_tags = soup.find('meta', property="og:title")
+    links = {"image" : image_tags["content"] , "title": title_tags["content"]}
 
     logo = Image.open("siteLogo-jworg.png")
     basewidth = 140
@@ -36,7 +32,7 @@ def gen_qr(article_link=""):
             (QRimg.size[1] - logo.size[1]) // 2)
     QRimg.paste(logo, pos)
 
-    response = requests.get(links[0])
+    response = requests.get(links.get("image"))
     webpage_image_bytes = io.BytesIO(response.content)
 
     image1 = Image.open(webpage_image_bytes)
@@ -55,7 +51,7 @@ def gen_qr(article_link=""):
     font = ImageFont.truetype("Roboto-Bold.ttf", 34)
     draw = ImageDraw.Draw(new_image)
 
-    singleline_text(draw, links[1], font, xy=(0, 8),
+    singleline_text(draw, links.get("title"), font, xy=(0, 8),
                 wh=(2*image1_size[0], 30),
                 alignment="center",)
 
