@@ -1,13 +1,10 @@
-from os import link
+import io
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image, ImageOps
 from PIL import ImageDraw 
 from PIL import ImageFont
-import urllib.request
 import qrcode
-import uuid
-import os
 from flask import Flask, request, render_template, send_file
 app = Flask(__name__)
 
@@ -41,12 +38,10 @@ def gen_qr(article_link=""):
             (QRimg.size[1] - logo.size[1]) // 2)
     QRimg.paste(logo, pos)
 
-    qr_hex = uuid.uuid4().hex
-    filename = f"images/{qr_hex}.jpg"
+    response = requests.get(links[0])
+    webpage_image_bytes = io.BytesIO(response.content)
 
-    urllib.request.urlretrieve(links[0], filename)
-
-    image1 = Image.open(filename)
+    image1 = Image.open(webpage_image_bytes)
 
     image1 = image1.resize((160, 160))
     image2 = QRimg.resize((180, 180))
@@ -59,21 +54,19 @@ def gen_qr(article_link=""):
     new_image.paste(image1,(0,offset))
     new_image.paste(image2,(image1_size[0],offset - 10))
 
-    merged_filename = f"images/merged-{qr_hex}.jpg"
-    new_image.save(merged_filename,"JPEG")
-    os.remove(filename, dir_fd=None)
-    font = ImageFont.truetype("Roboto-Bold.ttf", 42)
+    font = ImageFont.truetype("Roboto-Bold.ttf", 34)
     draw = ImageDraw.Draw(new_image)
-    # draw.text((20, 20),links[1],(0,0,0), font=font)
 
-    singleline_text(draw, links[1], font, xy=(0, 10),
+    singleline_text(draw, links[1], font, xy=(0, 8),
                 wh=(2*image1_size[0], 30),
                 alignment="center",)
 
     border = (2, 2, 2, 2)
     new_image = ImageOps.expand(new_image, border=border, fill="black")
-    new_image.save(merged_filename,"JPEG")
-    return merged_filename
+    img_io = io.BytesIO()
+    new_image.save(img_io, 'JPEG')
+    img_io.seek(0)
+    return img_io
 
 
 def add_margin(pil_img, top, right, bottom, left, color):
@@ -114,13 +107,9 @@ def singleline_text(
 @app.route('/', methods =["GET", "POST"])
 def index():    
     if request.method == "POST":
-       # getting input with name = fname in HTML form
        fname = request.form.get("fname")
-       filename = gen_qr(article_link=fname)
-       # getting input with name = lname in HTML form  
-       response = send_file(filename, mimetype='image/jpg')
-       if response.status_code == requests.codes.ok:
-            os.remove(filename)
+       tempf = gen_qr(article_link=fname)
+       response = send_file(tempf, mimetype='image/jpg')
        return response 
     return render_template("index.jinja2")
 if __name__=='__main__':
