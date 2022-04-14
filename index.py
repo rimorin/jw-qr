@@ -3,18 +3,18 @@ import requests
 import qrcode
 import lxml
 import cchardet
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_file, abort
 app = Flask(__name__)
 
 def gen_qr(article_link=""):
     page = requests.get(article_link)
-    soup = BeautifulSoup(page.text, 'lxml')
+    meta_only = SoupStrainer('meta',{})
+    soup = BeautifulSoup(page.text, 'lxml', parse_only=meta_only)
     image_tags = soup.find('meta', property="og:image")
     title_tags = soup.find('meta', property="og:title")
     links = {"image" : image_tags["content"] , "title": title_tags["content"]}
-
     logo = Image.open("siteLogo-jworg.png")
     basewidth = 140
     wpercent = (basewidth/float(logo.size[0]))
@@ -25,7 +25,6 @@ def gen_qr(article_link=""):
     QRcode.add_data(article_link)
 
     QRcode.make()
-
     QRimg = QRcode.make_image(back_color=(250,250,250)).convert('RGB')
 
     pos = ((QRimg.size[0] - logo.size[0]) // 2,
@@ -51,7 +50,8 @@ def gen_qr(article_link=""):
     font = ImageFont.truetype("Roboto-Bold.ttf", 34)
     draw = ImageDraw.Draw(new_image)
 
-    singleline_text(draw, links.get("title"), font, xy=(0, 8),
+    removed_pipe_text = links.get("title", "").rpartition("|")[0]
+    singleline_text(draw, removed_pipe_text, font, xy=(0, 8),
                 wh=(2*image1_size[0], 30),
                 alignment="center",)
 
@@ -101,10 +101,9 @@ def singleline_text(
 @app.route('/', methods =["GET", "POST"])
 def index():    
     if request.method == "POST":
-       fname = request.form.get("fname")
-       tempf = gen_qr(article_link=fname)
-       response = send_file(tempf, mimetype='image/jpg')
-       return response 
+       article_link = request.form.get("article-link")
+       temp_img_file = gen_qr(article_link=article_link)
+       return send_file(temp_img_file, mimetype='image/jpg') 
     return render_template("index.jinja2")
 if __name__=='__main__':
    app.run()

@@ -15,8 +15,8 @@
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);">
 <form action="{{ url_for("index")}}" method="post" style="text-align: center">
-<label for="firstname"><strong>Enter article link</strong></label><br>
-<input type="text" id="firstname" name="fname" placeholder="Article link"><br>
+<label for="article-link"><strong>Enter article link</strong></label><br>
+<input type="text" id="article-link" name="article-link" placeholder="Article link" required><br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button type="submit" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
 <div>
 <form/>
@@ -27,12 +27,12 @@
         paste.addEventListener('click', () => {
             navigator.clipboard.readText().then((clipText) => {
                 console.log(clipText);
-                document.getElementById('firstname').value = clipText;
+                document.getElementById('article-link').value = clipText;
             });
         });
         const clearBtn = document.getElementById('clear');
         clearBtn.addEventListener('click', () => {
-            document.getElementById('firstname').value = "";
+            document.getElementById('article-link').value = "";
         });
     </script>
 </html>
