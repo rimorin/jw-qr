@@ -30,7 +30,7 @@ def gen_qr(article_link=""):
     draw_title(image=complete_qr_image, width=article_size[0], title=links.get("title", ""))
     complete_qr_image = draw_border(image=complete_qr_image)
     qr_file = io.BytesIO()
-    complete_qr_image.save(qr_file, 'JPEG')
+    complete_qr_image.save(qr_file, 'JPEG', quality=95)
     qr_file.seek(0)
     return qr_file
 
@@ -45,7 +45,7 @@ def get_article_image(image_url):
     response = requests.get(image_url)
     webpage_image_bytes = io.BytesIO(response.content)
     article_image = Image.open(webpage_image_bytes)
-    article_image = article_image.resize(ARTICLE_IMAGE_SIZE)
+    article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
     article_image = add_margin(article_image, top=0, bottom=15, left=15, right=15, color=(250,250,250))
     return article_image
 
@@ -67,7 +67,7 @@ def get_qr_image(article_link):
     pos = ((QRimg.size[0] - logo.size[0]) // 2,
             (QRimg.size[1] - logo.size[1]) // 2)
     QRimg.paste(logo, pos)
-    QRimg = QRimg.resize(ARTICLE_QR_SIZE)
+    QRimg = QRimg.resize(ARTICLE_QR_SIZE, Image.ANTIALIAS)
     return QRimg
 
 def draw_border(image):
