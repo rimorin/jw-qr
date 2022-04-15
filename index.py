@@ -14,6 +14,7 @@ IMAGE_OFFSET = 45
 ARTICLE_IMAGE_SIZE = (160, 160)
 ARTICLE_QR_SIZE = (180, 180)
 TITLE_Y_POS = 8
+TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 
 def gen_qr(article_link=""):
     if not article_link:
@@ -75,13 +76,20 @@ def draw_border(image):
 def draw_title(image, width, title):
     font = ImageFont.truetype("Roboto-Bold.ttf", 34)
     draw = ImageDraw.Draw(image)
-    if "|" in title:
-        title = title.rpartition("|")[0]
-    elif "—" in title:
-        title = title.rpartition("—")[0]
-    singleline_text(draw, title, font, xy=(0, TITLE_Y_POS),
+    singleline_text(draw, process_title(title=title), font, xy=(0, TITLE_Y_POS),
                 wh=(2*width, 30),
                 alignment="center",)
+
+def process_title(title):
+    if "|" in title:
+        partition = title.rpartition("|")
+        if any(ext in partition[0].casefold() for ext in TITLE_IGNORE_KEYS):
+            return partition[2]
+        return partition[0]
+    elif "—" in title:
+        title = title.rpartition("—")[0]
+    
+    return title
 
 def add_margin(pil_img, top, right, bottom, left, color):
     width, height = pil_img.size
