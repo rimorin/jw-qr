@@ -3,6 +3,7 @@ import requests
 import qrcode
 import lxml
 import cchardet
+import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
@@ -17,6 +18,7 @@ ARTICLE_QR_SIZE = (180, 180)
 TITLE_Y_POS = 8
 TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
+TITLE_LENGTH_THRESHOLD = 60
 
 def gen_qr(article_link=""):
     if not article_link:
@@ -98,6 +100,11 @@ def process_title(title):
         return partition[0]
     elif "—" in title:
         title = title.rpartition("—")[0]
+
+
+    if len(title) > TITLE_LENGTH_THRESHOLD:
+        first_non_alphanumeric_char = re.search(r'\W\s+', title).start()
+        title = title[0 : first_non_alphanumeric_char + 1]
     
     return title
 
