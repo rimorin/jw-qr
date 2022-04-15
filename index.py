@@ -1,4 +1,5 @@
 import io
+from random import randint
 import requests
 import qrcode
 import lxml
@@ -8,6 +9,8 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file, abort
+from docx import Document
+from docx.shared import Inches, Mm
 app = Flask(__name__)
 
 IMAGE_TAG = "og:image"
@@ -19,6 +22,31 @@ TITLE_Y_POS = 8
 TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
 TITLE_LENGTH_THRESHOLD = 60
+
+DOC_ROWS = 9
+DOC_COLUMNS = 4
+
+def gen_doc(img):
+    document = Document()
+    section = document.sections[0]
+    section.page_height = Mm(297)
+    section.page_width = Mm(210)
+    section.left_margin = Mm(10.4)
+    section.right_margin = Mm(10.4)
+    section.top_margin = Mm(12.4)
+    section.bottom_margin = Mm(12.4)
+    section.header_distance = Mm(12.7)
+    section.footer_distance = Mm(12.7)
+    table = document.add_table(rows=DOC_ROWS, cols=DOC_COLUMNS)
+    for row in range(len(table.rows)):
+        for col in range(len(table.columns)):
+            paragraph = table.cell(row, col).paragraphs[0]
+            run = paragraph.add_run()
+            run.add_picture(img, height=Inches(1))
+    word_file = io.BytesIO()
+    document.save(word_file)
+    word_file.seek(0)
+    return word_file
 
 def gen_qr(article_link=""):
     if not article_link:
@@ -152,7 +180,9 @@ def singleline_text(
 def index():    
     if request.method == "POST":
        article_link = request.form.get("article-link", "")
-       return send_file(gen_qr(article_link=article_link), mimetype='image/jpg') 
+       img_file = gen_qr(article_link=article_link)
+       word_doc = gen_doc(img=img_file)
+       return send_file(word_doc, download_name=f"article-doc-{randint(10000, 99990)}.docx",as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
     return render_template("index.jinja2")
 if __name__=='__main__':
    app.run()
