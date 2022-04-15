@@ -3,6 +3,7 @@ import requests
 import qrcode
 import lxml
 import cchardet
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file, abort
@@ -15,12 +16,21 @@ ARTICLE_IMAGE_SIZE = (160, 160)
 ARTICLE_QR_SIZE = (180, 180)
 TITLE_Y_POS = 8
 TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
+EXPECTED_DOMAIN = "www.jw.org"
 
 def gen_qr(article_link=""):
     if not article_link:
         return
-    links = scrape_article(article_link=article_link)
-    left_image = get_article_image(image_url=links.get("image"))
+
+    result = urlparse(article_link)
+    if result.netloc.casefold() != EXPECTED_DOMAIN:
+        abort(404, description=f"Please enter a link from {EXPECTED_DOMAIN}.")
+    links = {}
+    try:
+        links = scrape_article(article_link=article_link)
+    except:
+        abort(404, description=f"Opps!! Something is wrong somewhere. Please try another link.")
+    left_image = get_article_image(image_url=links.get("image", ""))
     right_image = get_qr_image(article_link=article_link)
     article_size = left_image.size
     complete_qr_image = Image.new('RGB',(2*article_size[0], article_size[1]+IMAGE_OFFSET), (250,250,250))
@@ -129,15 +139,13 @@ def singleline_text(
     elif alignment == "right":
         x_offset = container_width - text_width
 
-
     drawing.text((x + x_offset, y + y_offset), text, font=font, fill=fill)
 
 @app.route('/', methods =["GET", "POST"])
 def index():    
     if request.method == "POST":
-       article_link = request.form.get("article-link")
-       temp_img_file = gen_qr(article_link=article_link)
-       return send_file(temp_img_file, mimetype='image/jpg') 
+       article_link = request.form.get("article-link", "")
+       return send_file(gen_qr(article_link=article_link), mimetype='image/jpg') 
     return render_template("index.jinja2")
 if __name__=='__main__':
    app.run()
