@@ -18,7 +18,7 @@
   top: 50%;
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);">
-<form action="{{ url_for("index")}}" method="post" style="text-align: center">
+<form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
 <label for="article-link"><strong>Enter article link</strong></label><br>
 <input type="text" id="article-link" name="article-link" placeholder="Article link" required><br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button type="submit" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
