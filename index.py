@@ -6,7 +6,7 @@ import lxml
 import cchardet
 import re
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup, SoupStrainer
+from bs4 import BeautifulSoup
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file, abort
 from docx import Document
@@ -132,6 +132,8 @@ def process_title(title):
         return partition[0]
     elif "—" in title:
         title = title.rpartition("—")[0]
+    elif ":" in title:
+        title = title.rpartition(":")[2]
 
 
     if len(title) > TITLE_LENGTH_THRESHOLD:
