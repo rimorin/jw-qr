@@ -4,6 +4,7 @@
 
 ![jw-qr-ayqgb3rr4a-uc a run app](https://user-images.githubusercontent.com/40650158/163501990-a45af048-6dad-409d-a0d4-41b0a11da874.jpeg)
 
+<img width="485" alt="Screenshot 2022-04-15 at 11 40 08 PM" src="https://user-images.githubusercontent.com/40650158/163591059-79740754-0385-40b3-9f3e-1f3a727faefc.png">
 
 ## Setup Instructions:
 
@@ -16,7 +17,7 @@
 
    - Copy article from JW.org into your device clipboard
    - Click on paste
-   - Click on generate to generate QR template based on the image and title of the article
+   - Click on generate to generate QR template in word document based on the image and title of the article
 
 ## Technologies Used
 
