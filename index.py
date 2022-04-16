@@ -22,6 +22,7 @@ TITLE_Y_POS = 8
 TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
 TITLE_LENGTH_THRESHOLD = 60
+DEFAULT_FONT = "NotoSans-Bold.ttf"
 
 DOC_ROWS = 9
 DOC_COLUMNS = 4
@@ -29,14 +30,14 @@ DOC_COLUMNS = 4
 def gen_doc(img):
     document = Document()
     section = document.sections[0]
+    section.header.is_linked_to_previous = True
+    section.footer.is_linked_to_previous = True
     section.page_height = Mm(297)
     section.page_width = Mm(210)
     section.left_margin = Mm(10.4)
     section.right_margin = Mm(10.4)
-    section.top_margin = Mm(12.4)
-    section.bottom_margin = Mm(12.4)
-    section.header_distance = Mm(12.7)
-    section.footer_distance = Mm(12.7)
+    section.top_margin = Mm(10.4)
+    section.bottom_margin = Mm(10.4)
     table = document.add_table(rows=DOC_ROWS, cols=DOC_COLUMNS)
     for row in range(len(table.rows)):
         for col in range(len(table.columns)):
@@ -67,7 +68,7 @@ def gen_qr(article_link=""):
     complete_qr_image.paste(left_image,(0,IMAGE_OFFSET))
     complete_qr_image.paste(right_image,(article_size[0],IMAGE_OFFSET - 10))
 
-    draw_title(image=complete_qr_image, width=article_size[0], title=links.get("title", ""))
+    draw_title(image=complete_qr_image, width=article_size[0], title=links.get("title", ""), lang=links.get("lang", "en"))
     complete_qr_image = draw_border(image=complete_qr_image)
     qr_file = io.BytesIO()
     complete_qr_image.save(qr_file, 'JPEG', quality=95)
@@ -76,10 +77,11 @@ def gen_qr(article_link=""):
 
 def scrape_article(article_link):
     page = requests.get(article_link)
-    soup = BeautifulSoup(page.text, 'lxml', parse_only=SoupStrainer('meta',property=[IMAGE_TAG, TITLE_TAG]))
+    soup = BeautifulSoup(page.text, 'lxml')
     image_tags = soup.find('meta', property=IMAGE_TAG)
     title_tags = soup.find('meta', property=TITLE_TAG)
-    return {"image" : image_tags["content"] , "title": title_tags["content"]}
+    html_tags = soup.find('html')
+    return {"image" : image_tags["content"] , "title": title_tags["content"], "lang": html_tags.get("lang", "en")}
 
 def get_article_image(image_url):
     response = requests.get(image_url)
@@ -113,8 +115,10 @@ def get_qr_image(article_link):
 def draw_border(image):
     return ImageOps.expand(image, border=(2, 2, 2, 2), fill="black")
 
-def draw_title(image, width, title):
-    font = ImageFont.truetype("Roboto-Bold.ttf", 34)
+def draw_title(image, width, title, lang):
+    is_chinese_language = "cmn" in lang
+    font_language = "NotoSansSC-Bold.otf" if is_chinese_language else DEFAULT_FONT
+    font = ImageFont.truetype(font_language, 34)
     draw = ImageDraw.Draw(image)
     singleline_text(draw, process_title(title=title), font, xy=(0, TITLE_Y_POS),
                 wh=(2*width, 30),
