@@ -19,11 +19,12 @@
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);">
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
-<label for="article-link"><strong>Enter article link</strong></label><br>
+<div><button id="infoBtn" type="button" class="btn modal-open"><i class="fa fa-circle-question"></i></button> <label for="article-link"><strong>Enter article link</strong></label></div><br>
 <input type="text" id="article-link" name="article-link" placeholder="Article link" required><br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button type="submit" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
-<div>
+</div>
 <form/>
+{% include 'notes.jinja2' %}
 {% endblock %}
 </body>
 <script>
@@ -38,5 +39,26 @@
         clearBtn.addEventListener('click', () => {
             document.getElementById('article-link').value = "";
         });
+
+        const notesModal = document.getElementById("notesModal");
+        const infoBtn = document.getElementById("infoBtn");
+        const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+        // When the user clicks on the button, open the modal
+        infoBtn.onclick = function() {
+            notesModal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        modalCloseBtn.onclick = function() {
+            notesModal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+        if (event.target == notesModal) {
+            notesModal.style.display = "none";
+        }
+        }
     </script>
 </html>
