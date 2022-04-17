@@ -25,7 +25,7 @@ TITLE_Y_POS = 8
 TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
 TITLE_LENGTH_THRESHOLD = 60
-DEFAULT_FONT = "NotoSans-Bold.ttf"
+DEFAULT_FONT = "assets/fonts/NotoSans-Bold.ttf"
 URL_LENGTH_THRESHOLD = 200
 
 DOC_ROWS = 9
@@ -96,7 +96,7 @@ def get_article_image(image_url):
     return article_image
 
 def prepare_logo():
-    logo = Image.open("siteLogo-jworg.png")
+    logo = Image.open("assets/images/siteLogo-jworg.png")
     basewidth = 140
     wpercent = (basewidth/float(logo.size[0]))
     hsize = int((float(logo.size[1])*float(wpercent)))
@@ -126,16 +126,29 @@ def draw_border(image):
 
 def get_language(lang):
 
+    font_size = 34
+    font_type = DEFAULT_FONT
+
     if "cmn" in lang:
-        return "NotoSansSC-Bold.otf"
+        font_size = 28
+        font_type = "assets/fonts/NotoSansSC-Bold.otf"
 
     if "ta" in lang:
-        return "NotoSansTamil.ttf"
+        font_type = "assets/fonts/NotoSansTamil.ttf"
+        
+    if "my" in lang:
+        font_size = 28
+        font_type = "assets/fonts/NotoSansMyanmar-Bold.ttf"
 
-    return DEFAULT_FONT
+    if "ja" in lang:
+        font_size = 28
+        font_type = "assets/fonts/NotoSansJP-Bold.otf"
+
+    return font_type, font_size
 
 def draw_title(image, width, title, lang):
-    font = ImageFont.truetype(get_language(lang=lang), 34)
+    font_type, font_size = get_language(lang=lang)
+    font = ImageFont.truetype(font_type, font_size)
     draw = ImageDraw.Draw(image)
     singleline_text(draw, process_title(title=title), font, xy=(0, TITLE_Y_POS),
                 wh=(2*width, 30),
