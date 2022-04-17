@@ -5,13 +5,16 @@ import qrcode
 import lxml
 import cchardet
 import re
+import pyshorteners
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file, abort
 from docx import Document
 from docx.shared import Inches, Mm
+
 app = Flask(__name__)
+shortener = pyshorteners.Shortener()
 
 IMAGE_TAG = "og:image"
 TITLE_TAG = "og:title"
@@ -23,6 +26,7 @@ TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
 TITLE_LENGTH_THRESHOLD = 60
 DEFAULT_FONT = "NotoSans-Bold.ttf"
+URL_LENGTH_THRESHOLD = 200
 
 DOC_ROWS = 9
 DOC_COLUMNS = 4
@@ -99,10 +103,15 @@ def prepare_logo():
     logo = logo.resize((basewidth, hsize), Image.ANTIALIAS)
     return logo
 
+def prepare_link(article_link):
+    if len(article_link) > URL_LENGTH_THRESHOLD:
+        article_link = shortener.tinyurl.short(article_link)
+    return article_link
+
 def get_qr_image(article_link):
     logo = prepare_logo()
     QRcode = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
-    QRcode.add_data(article_link)
+    QRcode.add_data(prepare_link(article_link=article_link))
     QRcode.make()
     QRimg = QRcode.make_image(back_color=(250,250,250)).convert('RGB')
 
@@ -115,10 +124,18 @@ def get_qr_image(article_link):
 def draw_border(image):
     return ImageOps.expand(image, border=(2, 2, 2, 2), fill="black")
 
+def get_language(lang):
+
+    if "cmn" in lang:
+        return "NotoSansSC-Bold.otf"
+
+    if "ta" in lang:
+        return "NotoSansTamil.ttf"
+
+    return DEFAULT_FONT
+
 def draw_title(image, width, title, lang):
-    is_chinese_language = "cmn" in lang
-    font_language = "NotoSansSC-Bold.otf" if is_chinese_language else DEFAULT_FONT
-    font = ImageFont.truetype(font_language, 34)
+    font = ImageFont.truetype(get_language(lang=lang), 34)
     draw = ImageDraw.Draw(image)
     singleline_text(draw, process_title(title=title), font, xy=(0, TITLE_Y_POS),
                 wh=(2*width, 30),
