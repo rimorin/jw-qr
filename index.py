@@ -86,7 +86,8 @@ def gen_qr(article_link=""):
     return qr_file
 
 def gen_header():
-    return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
+    return None
+    # return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
 
 def scrape_article(article_link):
     page = requests_session.get(article_link, headers=gen_header())
