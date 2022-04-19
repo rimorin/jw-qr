@@ -33,6 +33,8 @@ URL_LENGTH_THRESHOLD = 200
 DOC_ROWS = 9
 DOC_COLUMNS = 4
 
+WEB_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 12871.102.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.141 Safari/537.36"}
+
 def gen_doc(img):
     document = Document()
     section = document.sections[0]
@@ -82,7 +84,7 @@ def gen_qr(article_link=""):
     return qr_file
 
 def scrape_article(article_link):
-    page = requests_session.get(article_link)
+    page = requests_session.get(article_link, headers=WEB_HEADERS)
     soup = BeautifulSoup(page.text, 'lxml', parse_only=SoupStrainer(["meta", "link"]))
     image_tag = soup.find('meta', property=IMAGE_TAG)
     title_tag = soup.find('meta', property=TITLE_TAG)
@@ -90,7 +92,7 @@ def scrape_article(article_link):
     return {"image" : image_tag["content"] , "title": title_tag["content"], "lang": link_tag.get("hreflang", "en")}
 
 def get_article_image(image_url):
-    response = requests_session.get(image_url)
+    response = requests_session.get(image_url, headers=WEB_HEADERS)
     webpage_image_bytes = io.BytesIO(response.content)
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
