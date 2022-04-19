@@ -33,7 +33,9 @@ URL_LENGTH_THRESHOLD = 200
 DOC_ROWS = 9
 DOC_COLUMNS = 4
 
-WEB_HEADERS = {"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1"}
+# WEB_HEADERS = {"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1"}
+
+WEB_HEADERS = {}
 
 def gen_doc(img):
     document = Document()
