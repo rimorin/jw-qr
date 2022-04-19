@@ -33,7 +33,7 @@ URL_LENGTH_THRESHOLD = 200
 DOC_ROWS = 9
 DOC_COLUMNS = 4
 
-WEB_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 12871.102.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.141 Safari/537.36"}
+WEB_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 14526.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36"}
 
 def gen_doc(img):
     document = Document()
@@ -68,6 +68,7 @@ def gen_qr(article_link=""):
     try:
         links = scrape_article(article_link=article_link)
     except Exception as er:
+        print(er)
         abort(404, description=f"Opps!! Something is wrong somewhere. Please try another link.")
     left_image = get_article_image(image_url=links.get("image", ""))
     right_image = get_qr_image(article_link=article_link)
