@@ -1,20 +1,22 @@
 import io
-from random import randint
 import requests
 import qrcode
 import lxml
 import cchardet
 import re
 import pyshorteners
+from random import randint
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file, abort
 from docx import Document
 from docx.shared import Inches, Mm
 
+
 app = Flask(__name__)
 shortener = pyshorteners.Shortener()
+requests_session = requests.Session()
 
 IMAGE_TAG = "og:image"
 TITLE_TAG = "og:title"
@@ -63,7 +65,7 @@ def gen_qr(article_link=""):
     links = {}
     try:
         links = scrape_article(article_link=article_link)
-    except:
+    except Exception as er:
         abort(404, description=f"Opps!! Something is wrong somewhere. Please try another link.")
     left_image = get_article_image(image_url=links.get("image", ""))
     right_image = get_qr_image(article_link=article_link)
@@ -80,15 +82,15 @@ def gen_qr(article_link=""):
     return qr_file
 
 def scrape_article(article_link):
-    page = requests.get(article_link)
-    soup = BeautifulSoup(page.text, 'lxml')
-    image_tags = soup.find('meta', property=IMAGE_TAG)
-    title_tags = soup.find('meta', property=TITLE_TAG)
-    html_tags = soup.find('html')
-    return {"image" : image_tags["content"] , "title": title_tags["content"], "lang": html_tags.get("lang", "en")}
+    page = requests_session.get(article_link)
+    soup = BeautifulSoup(page.text, 'lxml', parse_only=SoupStrainer(["meta", "link"]))
+    image_tag = soup.find('meta', property=IMAGE_TAG)
+    title_tag = soup.find('meta', property=TITLE_TAG)
+    link_tag = soup.find('link', rel="alternate")
+    return {"image" : image_tag["content"] , "title": title_tag["content"], "lang": link_tag.get("hreflang", "en")}
 
 def get_article_image(image_url):
-    response = requests.get(image_url)
+    response = requests_session.get(image_url)
     webpage_image_bytes = io.BytesIO(response.content)
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
