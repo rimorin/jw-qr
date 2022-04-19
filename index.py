@@ -5,6 +5,8 @@ import lxml
 import cchardet
 import re
 import pyshorteners
+import pyuser_agent
+
 from random import randint
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
@@ -17,6 +19,7 @@ from docx.shared import Inches, Mm
 app = Flask(__name__)
 shortener = pyshorteners.Shortener()
 requests_session = requests.Session()
+pyuser_obj = pyuser_agent.UA()
 
 IMAGE_TAG = "og:image"
 TITLE_TAG = "og:title"
@@ -32,8 +35,6 @@ URL_LENGTH_THRESHOLD = 200
 
 DOC_ROWS = 9
 DOC_COLUMNS = 4
-
-WEB_HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 def gen_doc(img):
     document = Document()
@@ -83,8 +84,11 @@ def gen_qr(article_link=""):
     qr_file.seek(0)
     return qr_file
 
+def gen_header():
+    return {"User-Agent": pyuser_obj.random}
+
 def scrape_article(article_link):
-    page = requests_session.get(article_link, headers=WEB_HEADERS)
+    page = requests_session.get(article_link, headers=gen_header())
     soup = BeautifulSoup(page.text, 'lxml', parse_only=SoupStrainer(["meta", "link"]))
     image_tag = soup.find('meta', property=IMAGE_TAG)
     title_tag = soup.find('meta', property=TITLE_TAG)
@@ -92,7 +96,7 @@ def scrape_article(article_link):
     return {"image" : image_tag["content"] , "title": title_tag["content"], "lang": link_tag.get("hreflang", "en")}
 
 def get_article_image(image_url):
-    response = requests_session.get(image_url, headers=WEB_HEADERS)
+    response = requests_session.get(image_url, headers=gen_header())
     webpage_image_bytes = io.BytesIO(response.content)
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
