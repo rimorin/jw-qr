@@ -85,7 +85,8 @@ def gen_qr(article_link=""):
     return qr_file
 
 def gen_header():
-    return {"User-Agent": pyuser_obj.random}
+    # return {"User-Agent": pyuser_obj.random}
+    return None
 
 def scrape_article(article_link):
     page = requests_session.get(article_link, headers=gen_header())
