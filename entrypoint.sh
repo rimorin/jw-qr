@@ -1,1 +1,1 @@
-gunicorn index:app -w 4 -b 0.0.0.0:8000
+gunicorn index:app -w 2 -b 0.0.0.0:8000
