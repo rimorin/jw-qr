@@ -6,7 +6,6 @@ import cchardet
 import re
 import pyshorteners
 import pyuser_agent
-
 from random import randint
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
@@ -16,6 +15,8 @@ from docx import Document
 from docx.shared import Inches, Mm
 
 import logging
+ 
+logging.basicConfig(level=logging.INFO, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 
 app = Flask(__name__)
@@ -91,7 +92,7 @@ def gen_header():
     header = {"User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
     page = requests_session.get('http://httpbin.org/get' , headers=header)
     soup = BeautifulSoup(page.text, 'lxml')
-    logging.debug(soup.body)
+    app.logger.debug(soup.find('p'))
     return None
 
 def scrape_article(article_link):
@@ -236,4 +237,4 @@ def index():
        return send_file(word_doc, download_name=f"article-doc-{randint(10000, 99990)}.docx",as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
     return render_template("index.jinja2")
 if __name__=='__main__':
-   app.run()
+   app.run(debug=True)
