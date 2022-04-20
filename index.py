@@ -86,11 +86,10 @@ def gen_qr(article_link=""):
     return qr_file
 
 def gen_header():
-
     header = {"User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
     page = requests_session.get('http://httpbin.org/get' , headers=header)
     soup = BeautifulSoup(page.text, 'lxml')
-    print(soup)
+    app.logger.info(soup.body)
     return None
 
 def scrape_article(article_link):
