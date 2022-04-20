@@ -69,11 +69,10 @@ def gen_qr(article_link=""):
     if result.netloc.casefold() != EXPECTED_DOMAIN:
         abort(404, description=f"Please enter a link from {EXPECTED_DOMAIN}.")
     links = {}
-    # try:
-    links = scrape_article(article_link=article_link)
-    # except Exception as er:
-    #     print(er)
-    #     abort(404, description=f"Opps!! Something is wrong somewhere. Please try another link.")
+    try:
+        links = scrape_article(article_link=article_link)
+    except Exception:
+        abort(404, description=f"Opps!! Something is wrong somewhere. Please try another link.")
     left_image = get_article_image(image_url=links.get("image", ""))
     right_image = get_qr_image(article_link=article_link)
     article_size = left_image.size
@@ -89,10 +88,10 @@ def gen_qr(article_link=""):
     return qr_file
 
 def gen_header():
-    header = {"User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
-    page = requests_session.get('http://httpbin.org/get' , headers=header)
-    soup = BeautifulSoup(page.text, 'lxml')
-    abort(soup.find('p'))
+    # header = {"User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
+    # page = requests_session.get('http://httpbin.org/get' , headers=header)
+    # soup = BeautifulSoup(page.text, 'lxml')
+    # app.logger.debug(soup.find('p'))
     return None
 
 def scrape_article(article_link):
