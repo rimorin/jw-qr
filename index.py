@@ -91,7 +91,7 @@ def gen_header():
         "Accept-Encoding": "gzip, deflate", 
         "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8", 
         "Dnt": "1", 
-        "Host": "httpbin.org", 
+        # "Host": "httpbin.org", 
         "Upgrade-Insecure-Requests": "1", 
         "User-Agent": pyuser_obj.random, 
         "X-Amzn-Trace-Id": "Root=1-5ee7bae0-82260c065baf5ad7f0b3a3e3"
