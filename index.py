@@ -15,6 +15,8 @@ from flask import Flask, request, render_template, send_file, abort
 from docx import Document
 from docx.shared import Inches, Mm
 
+import logging
+
 
 app = Flask(__name__)
 shortener = pyshorteners.Shortener()
@@ -89,7 +91,7 @@ def gen_header():
     header = {"User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
     page = requests_session.get('http://httpbin.org/get' , headers=header)
     soup = BeautifulSoup(page.text, 'lxml')
-    app.logger.info(soup.body)
+    logging.debug(soup.body)
     return None
 
 def scrape_article(article_link):
