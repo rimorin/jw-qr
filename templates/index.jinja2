@@ -18,8 +18,9 @@
   top: 50%;
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);">
+  <div style="text-align:center;"><img id="infoBtn" height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
-<div><button id="infoBtn" type="button" class="btn modal-open"><i class="fa fa-circle-question"></i></button> <label for="article-link"><strong>Enter article link</strong></label></div><br>
+<div><label for="article-link"><strong>Enter article link</strong></label></div><br>
 <input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
 <label for="article-link"><strong>Enter title</strong></label><br>
 <input type="text" id="article-title" name="article-title" placeholder="Optional"><br>

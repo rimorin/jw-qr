@@ -5,7 +5,6 @@ import lxml
 import cchardet
 import re
 import pyshorteners
-import pyuser_agent
 from random import randint
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
@@ -17,7 +16,6 @@ from docx.shared import Inches, Mm
 app = Flask(__name__)
 shortener = pyshorteners.Shortener()
 requests_session = requests.Session()
-pyuser_obj = pyuser_agent.UA()
 
 IMAGE_TAG = "og:image"
 TITLE_TAG = "og:title"
@@ -29,7 +27,7 @@ TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
 TITLE_LENGTH_THRESHOLD = 60
 DEFAULT_FONT = "assets/fonts/NotoSans-Bold.ttf"
-URL_LENGTH_THRESHOLD = 200
+URL_LENGTH_THRESHOLD = 180
 
 DOC_ROWS = 9
 DOC_COLUMNS = 4
