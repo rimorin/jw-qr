@@ -24,3 +24,4 @@
    - BeautifulSoup - Web scraper
    - Pillow - Image Manipulation
    - Gunicorn - Http Server
+   - Docx - MS Word Generator 
