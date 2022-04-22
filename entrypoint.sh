@@ -1,1 +1,1 @@
-gunicorn index:app -w 4 -b 0.0.0.0:8000
+gunicorn index:app -w 1 --threads 8 --timeout 0 -b 0.0.0.0:8000
