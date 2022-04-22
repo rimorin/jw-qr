@@ -56,7 +56,7 @@ def gen_doc(img):
     word_file.seek(0)
     return word_file
 
-def gen_qr(article_link=""):
+def gen_qr(article_link="", article_title=""):
     if not article_link:
         return
 
@@ -75,7 +75,9 @@ def gen_qr(article_link=""):
     complete_qr_image.paste(left_image,(0,IMAGE_OFFSET))
     complete_qr_image.paste(right_image,(article_size[0],IMAGE_OFFSET - 10))
 
-    draw_title(image=complete_qr_image, width=article_size[0], title=links.get("title", ""), lang=links.get("lang", "en"))
+    qr_title = article_title if article_title else links.get("title", "")
+
+    draw_title(image=complete_qr_image, width=article_size[0], title=qr_title, lang=links.get("lang", "en"))
     complete_qr_image = draw_border(image=complete_qr_image)
     qr_file = io.BytesIO()
     complete_qr_image.save(qr_file, 'JPEG', quality=95)
@@ -219,7 +221,8 @@ def singleline_text(
 def index():    
     if request.method == "POST":
        article_link = request.form.get("article-link", "")
-       img_file = gen_qr(article_link=article_link)
+       article_title = request.form.get("article-title", "")
+       img_file = gen_qr(article_link=article_link, article_title=article_title)
        word_doc = gen_doc(img=img_file)
        return send_file(word_doc, download_name=f"article-doc-{randint(10000, 99990)}.docx",as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
     return render_template("index.jinja2")

@@ -20,7 +20,9 @@
   transform: translate(-50%, -50%);">
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
 <div><button id="infoBtn" type="button" class="btn modal-open"><i class="fa fa-circle-question"></i></button> <label for="article-link"><strong>Enter article link</strong></label></div><br>
-<input type="text" id="article-link" name="article-link" placeholder="Article link" required><br>
+<input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
+<label for="article-link"><strong>Enter title</strong></label><br>
+<input type="text" id="article-title" name="article-title" placeholder="Optional"><br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button type="submit" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
 </div>
 <form/>
@@ -38,6 +40,7 @@
         const clearBtn = document.getElementById('clear');
         clearBtn.addEventListener('click', () => {
             document.getElementById('article-link').value = "";
+            document.getElementById('article-title').value = "";
         });
 
         const notesModal = document.getElementById("notesModal");
