@@ -14,11 +14,6 @@ from flask import Flask, request, render_template, send_file, abort
 from docx import Document
 from docx.shared import Inches, Mm
 
-import logging
- 
-logging.basicConfig(level=logging.INFO, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
-
-
 app = Flask(__name__)
 shortener = pyshorteners.Shortener()
 requests_session = requests.Session()
@@ -87,15 +82,8 @@ def gen_qr(article_link=""):
     qr_file.seek(0)
     return qr_file
 
-def gen_header():
-    # header = {"User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip, deflate", "Accept-Language" : "en-GB,en-US;q=0.9,en;q=0.8", "Dnt" : "1", "Upgrade-Insecure-Requests" : "1"}
-    # page = requests_session.get('http://httpbin.org/get' , headers=header)
-    # soup = BeautifulSoup(page.text, 'lxml')
-    # app.logger.debug(soup.find('p'))
-    return None
-
 def scrape_article(article_link):
-    page = requests_session.get(article_link, headers=gen_header())
+    page = requests_session.get(article_link)
     soup = BeautifulSoup(page.text, 'lxml', parse_only=SoupStrainer(["meta", "link"]))
     image_tag = soup.find('meta', property=IMAGE_TAG)
     title_tag = soup.find('meta', property=TITLE_TAG)
@@ -103,7 +91,7 @@ def scrape_article(article_link):
     return {"image" : image_tag["content"] , "title": title_tag["content"], "lang": link_tag.get("hreflang", "en")}
 
 def get_article_image(image_url):
-    response = requests_session.get(image_url, headers=gen_header())
+    response = requests_session.get(image_url)
     webpage_image_bytes = io.BytesIO(response.content)
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
