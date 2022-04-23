@@ -96,7 +96,6 @@ def gen_qr(article_link="", article_title=""):
     try:
         links = scrape_article(article_link=article_link)
     except Exception as er:
-        print(er)
         traceback.print_exc()
         abort(
             404,
