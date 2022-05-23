@@ -13,11 +13,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head><body>
 {% block content %}
-<div style="position: absolute;
-  left: 50%;
-  top: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);">
+<div class="main-container">
   <div style="text-align:center;"><img id="infoBtn" height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
 <div><label for="article-link"><strong>Enter article link</strong></label></div><br>

@@ -14,8 +14,15 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Flask, request, render_template, send_file, abort
 from docx import Document
 from docx.shared import Inches, Mm
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
+)
 
 app = Flask(__name__)
+logger = app.logger
 shortener = pyshorteners.Shortener()
 
 IMAGE_TAG = "og:image"
@@ -320,6 +327,12 @@ def index():
         article_title = request.form.get("article-title", "")
         img_file = gen_qr(article_link=article_link, article_title=article_title)
         word_doc = gen_doc(img=img_file)
+        ip_address = request.headers.get(
+            "X-Forwarded-For", request.headers.get("Client-Ip", request.remote_addr)
+        )
+        logger.info(
+            f"Generated QR document. link={article_link}, title={article_title}, address={ip_address}"
+        )
         return send_file(
             word_doc,
             download_name=f"article-doc-{randint(10000, 99990)}.docx",
