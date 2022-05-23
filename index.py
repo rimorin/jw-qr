@@ -97,13 +97,15 @@ def gen_qr(article_link="", article_title=""):
         return
 
     result = urlparse(article_link)
-    if result.netloc.casefold() != EXPECTED_DOMAIN:
+    domain_link = result.netloc.casefold()
+    if domain_link != EXPECTED_DOMAIN:
+        logger.warn("Invalid domain.")
         abort(404, description=f"Please enter a link from {EXPECTED_DOMAIN}.")
     links = {}
     try:
         links = scrape_article(article_link=article_link)
     except Exception as er:
-        traceback.print_exc()
+        logger.error("Error during scraping.", exc_info=True)
         abort(
             404,
             description=f"Opps!! Something is wrong somewhere. Please try another link.",
@@ -144,6 +146,7 @@ def get_proxy():
         )
         return {"http": proxy_address, "https": proxy_address}
     except:
+        logger.error("Error when getting proxy address.", exc_info=True)
         return
 
 
@@ -163,6 +166,7 @@ def get_link_data(link, use_api=False):
             link, headers=scrape_header, proxies=proxy_addresses, timeout=PROXY_TIMEOUT
         )
     except:
+        logger.warn("Detected a problem with the proxy. Using default scraper ip.")
         scrape_response = requests.get(link)
     return scrape_response
 
@@ -325,11 +329,14 @@ def index():
     if request.method == "POST":
         article_link = request.form.get("article-link", "")
         article_title = request.form.get("article-title", "")
-        img_file = gen_qr(article_link=article_link, article_title=article_title)
-        word_doc = gen_doc(img=img_file)
         ip_address = request.headers.get(
             "X-Forwarded-For", request.headers.get("Client-Ip", request.remote_addr)
         )
+        logger.info(
+            f"Attempting to generate QR document. link={article_link}, title={article_title}, address={ip_address}"
+        )
+        img_file = gen_qr(article_link=article_link, article_title=article_title)
+        word_doc = gen_doc(img=img_file)
         logger.info(
             f"Generated QR document. link={article_link}, title={article_title}, address={ip_address}"
         )
