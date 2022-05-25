@@ -1,5 +1,4 @@
 import io
-import traceback
 import requests
 import qrcode
 import lxml
@@ -7,11 +6,11 @@ import cchardet
 import re
 import pyshorteners
 import os
-from random import choice, randint
+from random import choice
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
-from flask import Flask, request, render_template, send_file, abort
+from flask import Flask, request, render_template, send_file, abort, json
 from docx import Document
 from docx.shared import Inches, Mm
 import logging
@@ -100,7 +99,7 @@ def gen_qr(article_link="", article_title=""):
     domain_link = result.netloc.casefold()
     if domain_link != EXPECTED_DOMAIN:
         logger.warn("Invalid domain.")
-        abort(404, description=f"Please enter a link from {EXPECTED_DOMAIN}.")
+        abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
     links = {}
     try:
         links = scrape_article(article_link=article_link)
@@ -327,22 +326,20 @@ def singleline_text(
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        article_link = request.form.get("article-link", "")
-        article_title = request.form.get("article-title", "")
-        ip_address = request.headers.get(
-            "X-Forwarded-For", request.headers.get("Client-Ip", request.remote_addr)
-        )
+        data = json.loads(request.data)
+        article_link = data.get("article_link", "")
+        article_title = data.get("article_title", "")
         logger.info(
-            f"Attempting to generate QR document. link={article_link}, title={article_title}, address={ip_address}"
+            f"Attempting to generate QR document. link={article_link}, title={article_title}"
         )
         img_file = gen_qr(article_link=article_link, article_title=article_title)
         word_doc = gen_doc(img=img_file)
         logger.info(
-            f"Generated QR document. link={article_link}, title={article_title}, address={ip_address}"
+            f"Generated QR document. link={article_link}, title={article_title}"
         )
         return send_file(
             word_doc,
-            download_name=f"article-doc-{randint(10000, 99990)}.docx",
+            download_name="article-doc.docx",
             as_attachment=True,
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )

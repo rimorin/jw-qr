@@ -10,9 +10,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='font-awesome/js/all.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='download.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css-loader.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head><body>
 {% block content %}
+<div id="loader" class="loader loader-default" data-text="Generating QR Template"></div>
 <div class="main-container">
   <div style="text-align:center;"><img id="infoBtn" height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
@@ -20,45 +23,11 @@
 <input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
 <label for="article-link"><strong>Enter title</strong></label><br>
 <input type="text" id="article-title" name="article-title" placeholder="Optional"><br>
-<div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button type="submit" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
+<div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button id="submitBtn" type="button" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
 </div>
 <form/>
 {% include 'notes.jinja2' %}
 {% endblock %}
 </body>
-<script>
-        const paste = document.getElementById('paste');
-        paste.addEventListener('click', () => {
-            navigator.clipboard.readText().then((clipText) => {
-                console.log(clipText);
-                document.getElementById('article-link').value = clipText;
-            });
-        });
-        const clearBtn = document.getElementById('clear');
-        clearBtn.addEventListener('click', () => {
-            document.getElementById('article-link').value = "";
-            document.getElementById('article-title').value = "";
-        });
-
-        const notesModal = document.getElementById("notesModal");
-        const infoBtn = document.getElementById("infoBtn");
-        const modalCloseBtn = document.getElementById("modalCloseBtn");
-
-        // When the user clicks on the button, open the modal
-        infoBtn.onclick = function() {
-            notesModal.style.display = "block";
-        }
-
-        // When the user clicks on <span> (x), close the modal
-        modalCloseBtn.onclick = function() {
-            notesModal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-        if (event.target == notesModal) {
-            notesModal.style.display = "none";
-        }
-        }
-    </script>
+<script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
 </html>
