@@ -25,9 +25,19 @@ const randomIntFromInterval = (min=10000, max=99999) => {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+const urlToHash = string => {
+    let hash = 0;
+    if (string.length == 0) return hash;
+    for (let index = 0; index < string.length; index++) {
+        char = string.charCodeAt(index);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return hash;
+}
+
 paste.addEventListener('click', () => {
     navigator.clipboard.readText().then((clipText) => {
-        console.log(clipText);
         document.getElementById('article-link').value = clipText;
     });
 });
@@ -88,7 +98,7 @@ submitBtn.onclick = function(_) {
         }
         return response.blob();
     }).then(blob=>{
-        download(blob, `article-doc-${randomIntFromInterval()}.docx`, MIMETYPE);
+        download(blob, `QR${urlToHash(link_value)}.docx`, MIMETYPE);
     }).catch(err=> {
         alert("Opps!! Something is wrong somewhere. Please try another link.");
     });

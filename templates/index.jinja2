@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head><body>
 {% block content %}
-<div id="loader" class="loader loader-default" data-text="Generating QR Template"></div>
+<div id="loader" class="loader loader-default" data-text="Generating QR Template"  data-blink></div>
 <div class="main-container">
   <div style="text-align:center;"><img id="infoBtn" height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">

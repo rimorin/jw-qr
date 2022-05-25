@@ -20,10 +20,8 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
 )
 
-app = Flask(__name__)
-logger = app.logger
-shortener = pyshorteners.Shortener()
 
+TINYURL_TIMEOUT_SECONDS = 5
 IMAGE_TAG = "og:image"
 TITLE_TAG = "og:title"
 IMAGE_OFFSET = 45
@@ -66,6 +64,10 @@ DEFAULT_HEADER = {
     "Upgrade-Insecure-Requests": "1",
     "Referer": "http://www.google.com/",
 }
+
+app = Flask(__name__)
+logger = app.logger
+shortener = pyshorteners.Shortener(timeout=TINYURL_TIMEOUT_SECONDS)
 
 
 def gen_doc(img):
