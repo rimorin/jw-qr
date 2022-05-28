@@ -16,8 +16,11 @@
 </head><body>
 {% block content %}
 <div id="loader" class="loader loader-default" data-text="Generating QR Template"  data-blink></div>
+<div id="infoBtn" class="btn btn-primary btn-floating">
+  <i class="fas fa-circle-info"></i>
+</div>
 <div class="main-container">
-  <div style="text-align:center;"><img id="infoBtn" height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
+  <div style="text-align:center;"><img height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
 <div><label for="article-link"><strong>Enter article link</strong></label></div><br>
 <input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
