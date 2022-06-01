@@ -14,6 +14,7 @@ from flask import Flask, request, render_template, send_file, abort, json
 from docx import Document
 from docx.shared import Inches, Mm
 import logging
+import time
 
 logging.basicConfig(
     level=logging.INFO,
@@ -334,10 +335,12 @@ def index():
         logger.info(
             f"Attempting to generate QR document. link={article_link}, title={article_title}"
         )
+        process_start_time = time.time()
         img_file = gen_qr(article_link=article_link, article_title=article_title)
         word_doc = gen_doc(img=img_file)
+        process_end_time = time.time()
         logger.info(
-            f"Generated QR document. link={article_link}, title={article_title}"
+            f"Generated QR document. link={article_link}, title={article_title}, process_time={int(process_end_time-process_start_time)}s"
         )
         return send_file(
             word_doc,
