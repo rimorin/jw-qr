@@ -1,5 +1,7 @@
 # QR Generator for JW.ORG
 
+View it live here: [jwqr.live](https://jwqr.live)
+
 <img width="265" alt="Screenshot 2022-04-15 at 9 02 06 AM" src="https://user-images.githubusercontent.com/40650158/163501529-34d57f4b-d641-40c7-9d9d-6b4fd6f8890b.png">
 
 ![jw-qr-ayqgb3rr4a-uc a run app](https://user-images.githubusercontent.com/40650158/163501990-a45af048-6dad-409d-a0d4-41b0a11da874.jpeg)
