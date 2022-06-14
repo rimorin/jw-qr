@@ -24,4 +24,5 @@
    - BeautifulSoup - Web scraper
    - Pillow - Image Manipulation
    - Gunicorn - Http Server
-   - Docx - MS Word Generator 
+   - Docx - MS Word Generator
+   - Css-loader - https://github.com/raphaelfabeni/css-loader#install 
