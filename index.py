@@ -203,7 +203,7 @@ def prepare_logo():
     wpercent = basewidth / float(logo.size[0])
     hsize = int((float(logo.size[1]) * float(wpercent)))
     logo = logo.resize((basewidth, hsize), Image.ANTIALIAS)
-    return logo
+    return draw_border(logo, size=(6, 6, 6, 6), color="white")
 
 
 def prepare_link(article_link):
@@ -225,8 +225,8 @@ def get_qr_image(article_link):
     return QRimg
 
 
-def draw_border(image):
-    return ImageOps.expand(image, border=(2, 2, 2, 2), fill="black")
+def draw_border(image, size=(2, 2, 2, 2), color="black"):
+    return ImageOps.expand(image, border=size, fill=color)
 
 
 def get_language(lang):
