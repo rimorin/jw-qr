@@ -46,12 +46,17 @@ RAPID_API_HEADER = {
     "X-RapidAPI-Key": PROXY_API_KEY,
 }
 
-BROWSER_AGENTS = [
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
-    "Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko)",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
+SCRAPER_API_KEY = os.environ.get("SCRAPER_API_KEY", "")
+SCRAPER_API_ENDPT = os.environ.get("SCRAPER_API_ENDPT", "http://api.scrape.do/")
+
+CHROME_BROWSER_AGENTS = [
+    "Mozilla/5.0 (iPod; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/103.0.5060.63 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/103.0.5060.63 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/103.0.5060.63 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36",
@@ -59,10 +64,16 @@ BROWSER_AGENTS = [
 ]
 
 DEFAULT_HEADER = {
-    "Accept": "test/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Encoding": "gzip, deflate, br",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0",
     "Referer": "http://www.google.com/",
 }
 
@@ -148,19 +159,25 @@ def get_proxy():
         )
         return {"http": proxy_address, "https": proxy_address}
     except:
-        logger.error("Error when getting proxy address.", exc_info=True)
+        logger.error(
+            "Error when getting proxy address. Using scraper service.", exc_info=True
+        )
         return
 
 
 def get_link_data(link, use_api=False):
-    if not use_api or not PROXY_API_KEY:
-        return requests.get(link)
+    scrape_header = DEFAULT_HEADER
+    scrape_header["User-Agent"] = choice(CHROME_BROWSER_AGENTS)
+    NO_API_KEYS_CONFIGURED = not PROXY_API_KEY or not SCRAPER_API_KEY
+    if not use_api or NO_API_KEYS_CONFIGURED:
+        return requests.get(link, headers=scrape_header)
 
     proxy_addresses = get_proxy()
     if not proxy_addresses:
-        return requests.get(link)
-    scrape_header = DEFAULT_HEADER
-    scrape_header["User-Agent"] = choice(BROWSER_AGENTS)
+        # Use scraper.do if no proxy IP is provided
+        return requests.get(
+            SCRAPER_API_ENDPT, params={"url": link, "token": SCRAPER_API_KEY}
+        )
 
     scrape_response = None
     try:
@@ -168,17 +185,58 @@ def get_link_data(link, use_api=False):
             link, headers=scrape_header, proxies=proxy_addresses, timeout=PROXY_TIMEOUT
         )
     except:
-        logger.warn("Detected a problem with the proxy. Using default scraper ip.")
-        scrape_response = requests.get(link)
+        logger.warn(
+            f"Detected a problem with the proxy, {proxy_addresses}. Using external scraper service."
+        )
+        # Use scraper.do if there is a problem using proxy IP
+        scrape_response = requests.get(
+            SCRAPER_API_ENDPT, params={"url": link, "token": SCRAPER_API_KEY}
+        )
     return scrape_response
 
 
 def scrape_article(article_link):
-    page = get_link_data(link=article_link, use_api=True)
-    soup = BeautifulSoup(page.text, "lxml", parse_only=SoupStrainer(["meta", "link"]))
+    page_response = get_link_data(link=article_link, use_api=True)
+    return generate_tags(page_response, article_link)
+
+
+def generate_tags(response_data, page_link):
+    if not response_data or not response_data.ok:
+        # Use scraper.do if proxy response is not ok
+        response_data = requests.get(
+            SCRAPER_API_ENDPT, params={"url": page_link, "token": SCRAPER_API_KEY}
+        )
+
+    tag_data = extract_tags(response_data.text)
+
+    if not tag_data:
+        # Use scraper.do if contents from proxy scraper are invalid
+        response_data = requests.get(
+            SCRAPER_API_ENDPT, params={"url": page_link, "token": SCRAPER_API_KEY}
+        )
+        tag_data = extract_tags(response_data.text)
+
+    if not tag_data:
+        raise Exception(
+            "Unable to scrape data using both proxy IP and scraper service."
+        )
+    return tag_data
+
+
+def extract_tags(data):
+    soup = BeautifulSoup(data, "lxml", parse_only=SoupStrainer(["meta", "link"]))
+
     image_tag = soup.find("meta", property=IMAGE_TAG)
     title_tag = soup.find("meta", property=TITLE_TAG)
     link_tag = soup.find("link", rel="alternate")
+
+    something_wrong_with_scraped_content = (
+        not image_tag or not title_tag or not link_tag
+    )
+
+    if something_wrong_with_scraped_content:
+        return
+
     return {
         "image": image_tag["content"],
         "title": title_tag["content"],
