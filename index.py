@@ -174,6 +174,7 @@ def get_link_data(link, use_api=False):
 
     proxy_addresses = get_proxy()
     if not proxy_addresses:
+        logger.warn("No proxy IP provided. Using external scraper service.")
         # Use scraper.do if no proxy IP is provided
         return requests.get(
             SCRAPER_API_ENDPT, params={"url": link, "token": SCRAPER_API_KEY}
@@ -181,12 +182,14 @@ def get_link_data(link, use_api=False):
 
     scrape_response = None
     try:
+        logger.info(f"Scraping link={link} with proxy={proxy_addresses}.")
         scrape_response = requests.get(
             link, headers=scrape_header, proxies=proxy_addresses, timeout=PROXY_TIMEOUT
         )
-    except:
-        logger.warn(
-            f"Detected a problem with the proxy, {proxy_addresses}. Using external scraper service."
+    except Exception as er:
+        logger.error(
+            f"Detected a problem with the proxy, {proxy_addresses}. Using external scraper service.",
+            exc_info=True,
         )
         # Use scraper.do if there is a problem using proxy IP
         scrape_response = requests.get(
