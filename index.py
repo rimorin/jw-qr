@@ -170,7 +170,7 @@ def get_link_data(link, use_api=False):
     scrape_header["User-Agent"] = choice(CHROME_BROWSER_AGENTS)
     NO_API_KEYS_CONFIGURED = not PROXY_API_KEY or not SCRAPER_API_KEY
     if not use_api or NO_API_KEYS_CONFIGURED:
-        return requests.get(link, headers=scrape_header)
+        return requests.get(link)
 
     proxy_addresses = get_proxy()
     if not proxy_addresses:
