@@ -15,6 +15,7 @@ from docx import Document
 from docx.shared import Inches, Mm
 import logging
 import time
+import segno
 
 logging.basicConfig(
     level=logging.INFO,
@@ -165,6 +166,51 @@ def gen_qr_2(article_link="", article_title=""):
     )
 
 
+def gen_qr_3(article_link="", article_title=""):
+    if not article_link:
+        return
+
+    result = urlparse(article_link)
+    domain_link = result.netloc.casefold()
+    if domain_link != EXPECTED_DOMAIN:
+        logger.warn("Invalid domain.")
+        abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
+    links = {}
+    try:
+        links = scrape_article(article_link=article_link)
+    except Exception as er:
+        logger.error("Error during scraping.", exc_info=True)
+        abort(
+            404,
+            description=f"Opps!! Something is wrong somewhere. Please try another link.",
+        )
+    left_image = get_article_image(
+        image_url=links.get("image", ""), article_url=article_link
+    )
+    logo = Image.open("assets/images/siteLogo-jworg.png")
+    right_image = logo.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
+    article_size = left_image.size
+    complete_qr_image = Image.new(
+        "RGB", (2 * article_size[0], article_size[1] + IMAGE_OFFSET), (250, 250, 250)
+    )
+    complete_qr_image.paste(left_image, (0, IMAGE_OFFSET))
+    complete_qr_image.paste(right_image, (article_size[0] + 10, IMAGE_OFFSET))
+
+    qr_title = article_title if article_title else links.get("title", "")
+
+    draw_title(
+        image=complete_qr_image,
+        width=article_size[0],
+        title=qr_title,
+        lang=links.get("lang", "en"),
+    )
+    complete_qr_image = draw_border(image=complete_qr_image)
+    qr_file = io.BytesIO()
+    complete_qr_image.save(qr_file, "JPEG", quality=95)
+    qr_file.seek(0)
+    return qr_file
+
+
 def get_proxy():
     try:
         response = requests.request(
@@ -265,9 +311,19 @@ def extract_tags(data):
     }
 
 
-def get_article_image(image_url):
-    response = get_link_data(link=image_url)
-    webpage_image_bytes = io.BytesIO(response.content)
+def get_article_image(image_url, article_url=None):
+    webpage_image_bytes = None
+    if article_url:
+        response = get_link_data(link=image_url)
+        bg_file = io.BytesIO(response.content)
+        qrcode = segno.make(article_url, error="h")
+        webpage_image_bytes = io.BytesIO()
+        qrcode.to_artistic(
+            background=bg_file, target=webpage_image_bytes, kind="jpeg", border=0
+        )
+    else:
+        response = get_link_data(link=image_url)
+        webpage_image_bytes = io.BytesIO(response.content)
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
     article_image = add_margin(
