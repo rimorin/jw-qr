@@ -16,6 +16,13 @@ from docx.shared import Inches, Mm
 import logging
 import time
 import segno
+from qrcode.image.styledpil import StyledPilImage
+from qrcode.image.styles.moduledrawers import (
+    RoundedModuleDrawer,
+    VerticalBarsDrawer,
+    GappedSquareModuleDrawer,
+)
+from qrcode.image.styles.colormasks import RadialGradiantColorMask
 
 logging.basicConfig(
     level=logging.INFO,
@@ -114,7 +121,7 @@ def qr_processor(
     return eval(f"gen_qr_{article_design}")(article_link, article_title)
 
 
-def gen_qr(article_link="", article_title="", with_logo=True):
+def gen_qr(article_link="", article_title="", with_logo=True, design=None):
     if not article_link:
         return
 
@@ -133,7 +140,9 @@ def gen_qr(article_link="", article_title="", with_logo=True):
             description=f"Opps!! Something is wrong somewhere. Please try another link.",
         )
     left_image = get_article_image(image_url=links.get("image", ""))
-    right_image = get_qr_image(article_link=article_link, with_logo=with_logo)
+    right_image = get_qr_image(
+        article_link=article_link, with_logo=with_logo, design=design
+    )
     article_size = left_image.size
     complete_qr_image = Image.new(
         "RGB", (2 * article_size[0], article_size[1] + IMAGE_OFFSET), (250, 250, 250)
@@ -151,6 +160,7 @@ def gen_qr(article_link="", article_title="", with_logo=True):
     )
     complete_qr_image = draw_border(image=complete_qr_image)
     qr_file = io.BytesIO()
+    # complete_qr_image.save("test.jpg", "JPEG", quality=95)
     complete_qr_image.save(qr_file, "JPEG", quality=95)
     qr_file.seek(0)
     return qr_file
@@ -160,13 +170,43 @@ def gen_qr_1(article_link="", article_title=""):
     return gen_qr(article_link=article_link, article_title=article_title)
 
 
-def gen_qr_2(article_link="", article_title=""):
+def gen_qr_3(article_link="", article_title=""):
     return gen_qr(
-        article_link=article_link, article_title=article_title, with_logo=False
+        article_link=article_link,
+        article_title=article_title,
+        with_logo=False,
+        design=1,
     )
 
 
-def gen_qr_3(article_link="", article_title=""):
+def gen_qr_4(article_link="", article_title=""):
+    return gen_qr(
+        article_link=article_link,
+        article_title=article_title,
+        with_logo=False,
+        design=2,
+    )
+
+
+def gen_qr_5(article_link="", article_title=""):
+    return gen_qr(
+        article_link=article_link,
+        article_title=article_title,
+        with_logo=False,
+        design=3,
+    )
+
+
+def gen_qr_6(article_link="", article_title=""):
+    return gen_qr(
+        article_link=article_link,
+        article_title=article_title,
+        with_logo=False,
+        design=4,
+    )
+
+
+def gen_qr_2(article_link="", article_title=""):
     if not article_link:
         return
 
@@ -347,17 +387,50 @@ def prepare_link(article_link):
     return article_link
 
 
-def get_qr_image(article_link, with_logo=True):
+def get_qr_image(article_link, with_logo=True, design=None):
     QRcode = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
     QRcode.add_data(prepare_link(article_link=article_link))
     QRcode.make()
-    QRimg = QRcode.make_image(back_color=(250, 250, 250)).convert("RGB")
+    QRimg = get_design_qr(QRcode, design=design)
     if with_logo:
         logo = prepare_logo()
         pos = ((QRimg.size[0] - logo.size[0]) // 2, (QRimg.size[1] - logo.size[1]) // 2)
         QRimg.paste(logo, pos)
     QRimg = QRimg.resize(ARTICLE_QR_SIZE, Image.ANTIALIAS)
     return QRimg
+
+
+def get_design_qr(qr, design=None):
+    if not design:
+        return qr.make_image(back_color=(250, 250, 250)).convert("RGB")
+
+    img = None
+    if design == 1:
+        img = qr.make_image(
+            back_color=(250, 250, 250),
+            image_factory=StyledPilImage,
+            module_drawer=VerticalBarsDrawer(),
+        ).convert("RGB")
+    elif design == 2:
+        img = qr.make_image(
+            back_color=(250, 250, 250),
+            image_factory=StyledPilImage,
+            module_drawer=RoundedModuleDrawer(),
+        ).convert("RGB")
+    elif design == 3:
+        img = qr.make_image(
+            back_color=(250, 250, 250),
+            image_factory=StyledPilImage,
+            module_drawer=GappedSquareModuleDrawer(),
+        ).convert("RGB")
+    elif design == 4:
+        img = qr.make_image(
+            back_color=(250, 250, 250),
+            image_factory=StyledPilImage,
+            color_mask=RadialGradiantColorMask(),
+        ).convert("RGB")
+
+    return img
 
 
 def draw_border(image, size=(2, 2, 2, 2), color="black"):
