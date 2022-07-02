@@ -6,6 +6,11 @@ const modalCloseBtn = document.getElementById("modalCloseBtn");
 const submitBtn = document.getElementById("submitBtn");
 const loader = document.getElementById("loader");
 const MIMETYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const designSlides = document.querySelectorAll(".slide");
+const maxSlide = designSlides.length - 1;
+const nextSlideBtn = document.getElementById("nextBtn");
+const prevSlideBtn = document.getElementById("prevBtn");
+let currentSelectedSlide = 0;
 
 const isValidHttpUrl = string => {
     let url;
@@ -83,7 +88,8 @@ submitBtn.onclick = function(_) {
     }
     const json={
         article_link : link_value,
-        article_title : document.getElementById('article-title').value
+        article_title : document.getElementById('article-title').value,
+        article_design : currentSelectedSlide + 1
     };
     const options={
         method: "POST",
@@ -103,3 +109,34 @@ submitBtn.onclick = function(_) {
         alert("Opps!! Something is wrong somewhere. Please try another link.");
     });
 }
+
+// loop through slides and set each slides translateX
+designSlides.forEach((slide, indx) => {
+  slide.style.transform = `translateX(${indx * 100}%)`;
+});
+
+nextSlideBtn.onclick = function () {
+  // check if current slide is the last and reset current slide
+  if (currentSelectedSlide === maxSlide) {
+    currentSelectedSlide = 0;
+  } else {
+    currentSelectedSlide++;
+  }
+  //   move slide by -100%
+  designSlides.forEach((slide, indx) => {
+    slide.style.transform = `translateX(${100 * (indx - currentSelectedSlide)}%)`;
+  });
+};
+
+prevSlideBtn.onclick = function () {
+  // check if current slide is the first and reset current slide to last
+  if (currentSelectedSlide === 0) {
+    currentSelectedSlide = maxSlide;
+  } else {
+    currentSelectedSlide--;
+  }
+  //   move slide by 100%
+  designSlides.forEach((slide, indx) => {
+    slide.style.transform = `translateX(${100 * (indx - currentSelectedSlide)}%)`;
+  });
+};

@@ -79,3 +79,49 @@ form {
 .alert-closebtn:hover {
     color: black;
 }
+
+.slider {
+    width: 100%;
+    max-width: 800px;
+    height: 150px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+.slide {
+    width: 100%;
+    max-width: 800px;
+    height: 150px;
+    position: absolute;
+    transition: all 0.5s;
+}
+
+.slide img {
+    width: 85%;
+    height: 100%;
+    object-fit: scale-down;
+}
+
+.slide-btn {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    z-index: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 18px;
+}
+.btn:active {
+    transform: scale(1.1);
+}
+.btn-prev {
+    top: 45%;
+    left: 2%;
+}
+.btn-next {
+    top: 45%;
+    right: 2%;
+}
