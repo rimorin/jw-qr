@@ -77,6 +77,8 @@ DEFAULT_HEADER = {
     "Referer": "http://www.google.com/",
 }
 
+DEFAULT_QR_TEMPLATE_DESIGN_CODE = 1
+
 app = Flask(__name__)
 logger = app.logger
 shortener = pyshorteners.Shortener(timeout=TINYURL_TIMEOUT_SECONDS)
@@ -105,7 +107,13 @@ def gen_doc(img):
     return word_file
 
 
-def gen_qr(article_link="", article_title=""):
+def qr_processor(
+    article_link="", article_title="", article_design=DEFAULT_QR_TEMPLATE_DESIGN_CODE
+):
+    return eval(f"gen_qr_{article_design}")(article_link, article_title)
+
+
+def gen_qr(article_link="", article_title="", with_logo=True):
     if not article_link:
         return
 
@@ -124,7 +132,7 @@ def gen_qr(article_link="", article_title=""):
             description=f"Opps!! Something is wrong somewhere. Please try another link.",
         )
     left_image = get_article_image(image_url=links.get("image", ""))
-    right_image = get_qr_image(article_link=article_link)
+    right_image = get_qr_image(article_link=article_link, with_logo=with_logo)
     article_size = left_image.size
     complete_qr_image = Image.new(
         "RGB", (2 * article_size[0], article_size[1] + IMAGE_OFFSET), (250, 250, 250)
@@ -145,6 +153,16 @@ def gen_qr(article_link="", article_title=""):
     complete_qr_image.save(qr_file, "JPEG", quality=95)
     qr_file.seek(0)
     return qr_file
+
+
+def gen_qr_1(article_link="", article_title=""):
+    return gen_qr(article_link=article_link, article_title=article_title)
+
+
+def gen_qr_2(article_link="", article_title=""):
+    return gen_qr(
+        article_link=article_link, article_title=article_title, with_logo=False
+    )
 
 
 def get_proxy():
@@ -273,15 +291,15 @@ def prepare_link(article_link):
     return article_link
 
 
-def get_qr_image(article_link):
-    logo = prepare_logo()
+def get_qr_image(article_link, with_logo=True):
     QRcode = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
     QRcode.add_data(prepare_link(article_link=article_link))
     QRcode.make()
     QRimg = QRcode.make_image(back_color=(250, 250, 250)).convert("RGB")
-
-    pos = ((QRimg.size[0] - logo.size[0]) // 2, (QRimg.size[1] - logo.size[1]) // 2)
-    QRimg.paste(logo, pos)
+    if with_logo:
+        logo = prepare_logo()
+        pos = ((QRimg.size[0] - logo.size[0]) // 2, (QRimg.size[1] - logo.size[1]) // 2)
+        QRimg.paste(logo, pos)
     QRimg = QRimg.resize(ARTICLE_QR_SIZE, Image.ANTIALIAS)
     return QRimg
 
@@ -393,11 +411,16 @@ def index():
         data = json.loads(request.data)
         article_link = data.get("article_link", "")
         article_title = data.get("article_title", "")
+        article_design = data.get("article_design", DEFAULT_QR_TEMPLATE_DESIGN_CODE)
         logger.info(
-            f"Attempting to generate QR document. link={article_link}, title={article_title}"
+            f"Attempting to generate QR document. link={article_link}, title={article_title}, design={article_design}"
         )
         process_start_time = time.time()
-        img_file = gen_qr(article_link=article_link, article_title=article_title)
+        img_file = qr_processor(
+            article_link=article_link,
+            article_title=article_title,
+            article_design=article_design,
+        )
         word_doc = gen_doc(img=img_file)
         process_end_time = time.time()
         logger.info(

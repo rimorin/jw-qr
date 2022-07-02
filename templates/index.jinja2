@@ -22,10 +22,22 @@
 <div class="main-container">
   <div style="text-align:center;"><img height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
-<div><label for="article-link"><strong>Enter article link</strong></label></div><br>
+<div><label><strong>Enter article link</strong></label></div><br>
 <input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
-<label for="article-link"><strong>Enter title</strong></label><br>
+<label><strong>Enter title</strong></label><br>
 <input type="text" id="article-title" name="article-title" placeholder="Optional"><br>
+<div><label><strong>Select Design</strong></label></div>
+<div class="slider">
+  <div class="slide">
+    <img src="{{ url_for('static', filename='designs/design_1.jpg') }}"/>
+  </div>
+  <div class="slide">
+    <img src="{{ url_for('static', filename='designs/design_2.jpg') }}"/>
+  </div>
+  <button id="nextBtn" class="slide-btn btn-next" type="button">></button>
+  <button id="prevBtn" class="slide-btn btn-prev" type="button"><</button>
+</div>
+<br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button id="submitBtn" type="button" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
 </div>
 <form/>
