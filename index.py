@@ -18,11 +18,8 @@ import time
 import segno
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers import (
-    RoundedModuleDrawer,
     VerticalBarsDrawer,
-    GappedSquareModuleDrawer,
 )
-from qrcode.image.styles.colormasks import RadialGradiantColorMask
 
 logging.basicConfig(
     level=logging.INFO,
@@ -176,33 +173,6 @@ def gen_qr_3(article_link="", article_title=""):
         article_title=article_title,
         with_logo=False,
         design=1,
-    )
-
-
-def gen_qr_4(article_link="", article_title=""):
-    return gen_qr(
-        article_link=article_link,
-        article_title=article_title,
-        with_logo=False,
-        design=2,
-    )
-
-
-def gen_qr_5(article_link="", article_title=""):
-    return gen_qr(
-        article_link=article_link,
-        article_title=article_title,
-        with_logo=False,
-        design=3,
-    )
-
-
-def gen_qr_6(article_link="", article_title=""):
-    return gen_qr(
-        article_link=article_link,
-        article_title=article_title,
-        with_logo=False,
-        design=4,
     )
 
 
@@ -410,24 +380,6 @@ def get_design_qr(qr, design=None):
             back_color=(250, 250, 250),
             image_factory=StyledPilImage,
             module_drawer=VerticalBarsDrawer(),
-        ).convert("RGB")
-    elif design == 2:
-        img = qr.make_image(
-            back_color=(250, 250, 250),
-            image_factory=StyledPilImage,
-            module_drawer=RoundedModuleDrawer(),
-        ).convert("RGB")
-    elif design == 3:
-        img = qr.make_image(
-            back_color=(250, 250, 250),
-            image_factory=StyledPilImage,
-            module_drawer=GappedSquareModuleDrawer(),
-        ).convert("RGB")
-    elif design == 4:
-        img = qr.make_image(
-            back_color=(250, 250, 250),
-            image_factory=StyledPilImage,
-            color_mask=RadialGradiantColorMask(),
         ).convert("RGB")
 
     return img
