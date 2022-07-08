@@ -33,6 +33,7 @@ TITLE_TAG = "og:title"
 IMAGE_OFFSET = 45
 ARTICLE_IMAGE_SIZE = (160, 160)
 ARTICLE_QR_SIZE = (180, 180)
+ARTICLE_IMG_QR_SIZE = (120, 120)
 TITLE_Y_POS = 8
 TITLE_IGNORE_KEYS = ["awake", "watchtower", "videos"]
 EXPECTED_DOMAIN = "www.jw.org"
@@ -221,6 +222,78 @@ def gen_qr_2(article_link="", article_title=""):
     return qr_file
 
 
+def gen_qr_4(article_link="", article_title=""):
+    if not article_link:
+        return
+
+    result = urlparse(article_link)
+    domain_link = result.netloc.casefold()
+    if domain_link != EXPECTED_DOMAIN:
+        logger.warn("Invalid domain.")
+        abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
+    links = {}
+    try:
+        links = scrape_article(article_link=article_link)
+    except Exception as er:
+        logger.error("Error during scraping.", exc_info=True)
+        abort(
+            404,
+            description=f"Opps!! Something is wrong somewhere. Please try another link.",
+        )
+    response = get_link_data(link=links.get("banner", ""))
+    bg_file = io.BytesIO(response.content)
+
+    banner_image = Image.open(bg_file)
+    banner_image = banner_image.resize(
+        ((ARTICLE_IMAGE_SIZE[0] * 2) - IMAGE_OFFSET, ARTICLE_IMAGE_SIZE[1]),
+        Image.ANTIALIAS,
+    )
+    cropped_banner_image = banner_image.crop(
+        (
+            banner_image.size[0] - ARTICLE_IMG_QR_SIZE[0],
+            banner_image.size[1] - ARTICLE_IMG_QR_SIZE[1],
+            banner_image.size[0],
+            banner_image.size[1],
+        )
+    )
+    cropped_image = io.BytesIO()
+    cropped_banner_image.save(cropped_image, format="PNG")
+    cropped_qr_image = segno.make(article_link, error="h")
+    cropped_qr_file = io.BytesIO()
+    cropped_qr_image.to_artistic(
+        background=cropped_image, target=cropped_qr_file, kind="jpeg", border=0
+    )
+    new_image_file = Image.open(cropped_qr_file)
+    new_image_file = new_image_file.resize(ARTICLE_IMG_QR_SIZE, Image.ANTIALIAS)
+    image_position = (
+        banner_image.size[0] - new_image_file.size[0],
+        banner_image.size[1] - new_image_file.size[1],
+    )
+    banner_image.paste(new_image_file, image_position)
+    left_image = prepare_logo(basewidth=50, border=False)
+    image_position = (0, banner_image.size[1] - left_image.size[1])
+    banner_image.paste(left_image, image_position)
+
+    qr_title = article_title if article_title else links.get("title", "")
+    draw_title(
+        image=banner_image,
+        width=ARTICLE_IMAGE_SIZE[0] - 20,
+        title=qr_title,
+        lang=links.get("lang", "en"),
+        with_outline=True,
+        title_pos=(0, 3),
+    )
+    banner_image = add_margin(
+        banner_image, top=5, bottom=5, left=5, right=5, color=(250, 250, 250)
+    )
+    banner_image = draw_border(image=banner_image)
+    qr_file = io.BytesIO()
+    # banner_image.save("test.jpg", "JPEG", quality=95)
+    banner_image.save(qr_file, "JPEG", quality=95)
+    qr_file.seek(0)
+    return qr_file
+
+
 def get_proxy():
     try:
         response = requests.request(
@@ -301,14 +374,17 @@ def generate_tags(response_data, page_link):
 
 
 def extract_tags(data):
-    soup = BeautifulSoup(data, "lxml", parse_only=SoupStrainer(["meta", "link"]))
+    soup = BeautifulSoup(
+        data, "lxml", parse_only=SoupStrainer(["meta", "link", "figure"])
+    )
 
     image_tag = soup.find("meta", property=IMAGE_TAG)
     title_tag = soup.find("meta", property=TITLE_TAG)
     link_tag = soup.find("link", rel="alternate")
+    figure_tag = soup.find("figure")
 
     something_wrong_with_scraped_content = (
-        not image_tag or not title_tag or not link_tag
+        not image_tag or not title_tag or not link_tag or not figure_tag
     )
 
     if something_wrong_with_scraped_content:
@@ -318,6 +394,7 @@ def extract_tags(data):
         "image": image_tag["content"],
         "title": title_tag["content"],
         "lang": link_tag.get("hreflang", "en"),
+        "banner": figure_tag.span.get("data-img-size-md"),
     }
 
 
@@ -342,12 +419,13 @@ def get_article_image(image_url, article_url=None):
     return article_image
 
 
-def prepare_logo():
+def prepare_logo(basewidth=140, border=True):
     logo = Image.open("assets/images/siteLogo-jworg.png")
-    basewidth = 140
     wpercent = basewidth / float(logo.size[0])
     hsize = int((float(logo.size[1]) * float(wpercent)))
     logo = logo.resize((basewidth, hsize), Image.ANTIALIAS)
+    if border == False:
+        return logo
     return draw_border(logo, size=(6, 6, 6, 6), color="white")
 
 
@@ -412,7 +490,9 @@ def get_language(lang):
     return font_type, font_size
 
 
-def draw_title(image, width, title, lang):
+def draw_title(
+    image, width, title, lang, with_outline=False, title_pos=(0, TITLE_Y_POS)
+):
     font_type, font_size = get_language(lang=lang)
     font = ImageFont.truetype(font_type, font_size)
     draw = ImageDraw.Draw(image)
@@ -420,9 +500,10 @@ def draw_title(image, width, title, lang):
         draw,
         process_title(title=title),
         font,
-        xy=(0, TITLE_Y_POS),
+        xy=title_pos,
         wh=(2 * width, 30),
         alignment="center",
+        with_outline=with_outline,
     )
 
 
@@ -454,7 +535,7 @@ def add_margin(pil_img, top, right, bottom, left, color):
 
 
 def singleline_text(
-    drawing, text, font_info, xy, wh, fill="#000", alignment=None, decoration=None
+    drawing, text, font_info, xy, wh, fill="#000", alignment=None, with_outline=None
 ):
     x, y = xy
     container_width, container_height = wh
@@ -463,6 +544,7 @@ def singleline_text(
     font = font_info
     fontsize = font.size
     font_path = font.path
+    shadowcolor = "white"
 
     text_width = font.getsize(text)[0]
     while text_width > container_width:
@@ -483,7 +565,21 @@ def singleline_text(
     elif alignment == "right":
         x_offset = container_width - text_width
 
-    drawing.text((x + x_offset, y + y_offset), text, font=font, fill=fill)
+    final_tuple = (x + x_offset, y + y_offset)
+    if with_outline:
+        drawing.text(
+            (final_tuple[0] - 1, final_tuple[1] - 1), text, font=font, fill=shadowcolor
+        )
+        drawing.text(
+            (final_tuple[0] + 1, final_tuple[1] - 1), text, font=font, fill=shadowcolor
+        )
+        drawing.text(
+            (final_tuple[0] - 1, final_tuple[1] + 1), text, font=font, fill=shadowcolor
+        )
+        drawing.text(
+            (final_tuple[0] + 1, final_tuple[1] + 1), text, font=font, fill=shadowcolor
+        )
+    drawing.text(final_tuple, text, font=font, fill=fill)
 
 
 @app.route("/", methods=["GET", "POST"])
