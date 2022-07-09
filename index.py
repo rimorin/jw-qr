@@ -258,7 +258,9 @@ def gen_qr_4(article_link="", article_title=""):
     )
     cropped_image = io.BytesIO()
     cropped_banner_image.save(cropped_image, format="PNG")
-    cropped_qr_image = segno.make(article_link, error="h")
+    cropped_qr_image = segno.make(
+        prepare_link(article_link=article_link, force_shorten=True), error="h"
+    )
     cropped_qr_file = io.BytesIO()
     cropped_qr_image.to_artistic(
         background=cropped_image, target=cropped_qr_file, kind="jpeg", border=0
@@ -277,7 +279,7 @@ def gen_qr_4(article_link="", article_title=""):
     qr_title = article_title if article_title else links.get("title", "")
     draw_title(
         image=banner_image,
-        width=ARTICLE_IMAGE_SIZE[0] - 20,
+        width=ARTICLE_IMAGE_SIZE[0] - 25,
         title=qr_title,
         lang=links.get("lang", "en"),
         with_outline=True,
@@ -384,17 +386,21 @@ def extract_tags(data):
     figure_tag = soup.find("figure")
 
     something_wrong_with_scraped_content = (
-        not image_tag or not title_tag or not link_tag or not figure_tag
+        not image_tag or not title_tag or not link_tag
     )
 
     if something_wrong_with_scraped_content:
         return
 
+    article_image = image_tag["content"]
+    banner_image = (
+        figure_tag.span.get("data-img-size-md") if figure_tag else article_image
+    )
     return {
-        "image": image_tag["content"],
+        "image": article_image,
         "title": title_tag["content"],
         "lang": link_tag.get("hreflang", "en"),
-        "banner": figure_tag.span.get("data-img-size-md"),
+        "banner": banner_image,
     }
 
 
@@ -403,7 +409,9 @@ def get_article_image(image_url, article_url=None):
     if article_url:
         response = get_link_data(link=image_url)
         bg_file = io.BytesIO(response.content)
-        qrcode = segno.make(article_url, error="h")
+        qrcode = segno.make(
+            prepare_link(article_link=article_url, force_shorten=True), error="h"
+        )
         webpage_image_bytes = io.BytesIO()
         qrcode.to_artistic(
             background=bg_file, target=webpage_image_bytes, kind="jpeg", border=0
@@ -429,8 +437,8 @@ def prepare_logo(basewidth=140, border=True):
     return draw_border(logo, size=(6, 6, 6, 6), color="white")
 
 
-def prepare_link(article_link):
-    if len(article_link) > URL_LENGTH_THRESHOLD:
+def prepare_link(article_link, force_shorten=False):
+    if len(article_link) > URL_LENGTH_THRESHOLD or force_shorten:
         article_link = shortener.tinyurl.short(article_link)
     return article_link
 
