@@ -10,7 +10,15 @@ from random import choice
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, SoupStrainer
 from PIL import Image, ImageOps, ImageDraw, ImageFont
-from flask import Flask, request, render_template, send_file, abort, json
+from flask import (
+    Flask,
+    request,
+    render_template,
+    send_file,
+    abort,
+    json,
+    send_from_directory,
+)
 from docx import Document
 from docx.shared import Inches, Mm
 import logging
@@ -527,8 +535,14 @@ def process_title(title):
         title = title.rpartition(":")[2]
 
     if len(title) > TITLE_LENGTH_THRESHOLD:
-        first_non_alphanumeric_char = re.search(r"\W\s+", title).start()
-        title = title[0 : first_non_alphanumeric_char + 1]
+        try:
+            first_non_alphanumeric_char = re.search(r"\W\s+", title).start()
+            title = title[0 : first_non_alphanumeric_char + 1]
+        except Exception as e:
+            logger.error(
+                "Error detected when processing title. Using default title",
+                exc_info=True,
+            )
 
     return title
 
@@ -588,6 +602,12 @@ def singleline_text(
             (final_tuple[0] + 1, final_tuple[1] + 1), text, font=font, fill=shadowcolor
         )
     drawing.text(final_tuple, text, font=font, fill=fill)
+
+
+@app.route("/robots.txt")
+@app.route("/sitemap.xml")
+def static_from_root():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 
 @app.route("/", methods=["GET", "POST"])

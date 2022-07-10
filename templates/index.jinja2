@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="qr, jw.org, ministry, preaching, code, scan">
+    <meta name="author" content="John Eric Rimorin Kwan">
+    <meta name="description" content="A QR template generator for JW.org that comes with beautiful designs.">
+    <meta name="robots" content="index, follow" />
     <title>QR Generator for JW.ORG</title>
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='font-awesome/js/all.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='download.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css-loader.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome/css/all.min.css') }}">
 </head><body>
 {% block content %}
-<div id="loader" class="loader loader-default" data-text="Generating QR Template"  data-blink></div>
-<div id="infoBtn" class="btn btn-primary btn-floating">
-  <i class="fas fa-circle-info"></i>
+<div id="loader" class="loader loader-default" data-text="Generating QR Template" data-blink></div>
+<div id="infoBtn" class="btn" style="cursor: pointer;">
+  <i class="fa fa-circle-info"></i>
 </div>
 <div class="main-container">
-  <div style="text-align:center;"><img height="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
+  <div style="text-align:center;"><img height="100px" width="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
 <form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
 <div><label><strong>Enter article link</strong></label></div><br>
 <input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
@@ -29,16 +32,16 @@
 <div><label><strong>Select Design</strong></label></div>
 <div class="slider">
   <div class="slide">
-    <img src="{{ url_for('static', filename='designs/design_1.jpg') }}"/>
+    <img alt="Default QR template" src="{{ url_for('static', filename='designs/design_1.jpg') }}"/>
   </div>
   <div class="slide">
-    <img src="{{ url_for('static', filename='designs/design_2.jpg') }}"/>
+    <img alt="Template with artistic QR" src="{{ url_for('static', filename='designs/design_2.jpg') }}"/>
   </div>
   <div class="slide">
-    <img src="{{ url_for('static', filename='designs/design_3.jpg') }}"/>
+    <img alt="Plain and Simple QR without JW logo" src="{{ url_for('static', filename='designs/design_3.jpg') }}"/>
   </div>
   <div class="slide">
-    <img src="{{ url_for('static', filename='designs/design_4.jpg') }}"/>
+    <img alt="Template with banner and embedded QR" src="{{ url_for('static', filename='designs/design_4.jpg') }}"/>
   </div>
   <button id="nextBtn" class="slide-btn btn-next" type="button"><i class="fa fa-circle-arrow-right"></i></button>
   <button id="prevBtn" class="slide-btn btn-prev" type="button"><i class="fa fa-circle-arrow-left"></i></button>
@@ -49,6 +52,7 @@
 <form/>
 {% include 'notes.jinja2' %}
 {% endblock %}
-</body>
+<script type="text/javascript" src="{{ url_for('static', filename='download.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
 </html>
