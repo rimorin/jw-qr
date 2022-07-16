@@ -49,6 +49,10 @@ TITLE_LENGTH_THRESHOLD = 60
 DEFAULT_FONT = "assets/fonts/NotoSans-Bold.ttf"
 URL_LENGTH_THRESHOLD = 180
 
+MEDIAITEM_URL_KEY = "mediaitems"
+DEFAULT_MEDIA_IMAGE = "https://assetsnffrgf-a.akamaihd.net/assets/m/802013129/univ/art/802013129_univ_sqr_md.jpg"
+DEFAULT_MEDIA_BANNER = "https://assetsnffrgf-a.akamaihd.net/assets/m/802013129/univ/art/802013129_univ_wsr_md.jpg"
+
 DOC_ROWS = 9
 DOC_COLUMNS = 4
 
@@ -356,8 +360,23 @@ def get_link_data(link, use_api=False):
 
 
 def scrape_article(article_link):
+    default_link = get_default_link_data(article_link=article_link)
+    if default_link:
+        return default_link
     page_response = get_link_data(link=article_link, use_api=True)
     return generate_tags(page_response, article_link)
+
+
+def get_default_link_data(article_link):
+    if MEDIAITEM_URL_KEY not in article_link:
+        return
+
+    return {
+        "image": DEFAULT_MEDIA_IMAGE,
+        "title": "",
+        "lang": "en",
+        "banner": DEFAULT_MEDIA_BANNER,
+    }
 
 
 def generate_tags(response_data, page_link):
