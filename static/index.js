@@ -10,6 +10,7 @@ const designSlides = document.querySelectorAll(".slide");
 const maxSlide = designSlides.length - 1;
 const nextSlideBtn = document.getElementById("nextBtn");
 const prevSlideBtn = document.getElementById("prevBtn");
+const mediaUrlKey = "mediaitems";
 let currentSelectedSlide = 0;
 
 const isValidHttpUrl = string => {
@@ -24,6 +25,12 @@ const isValidHttpUrl = string => {
         return false;
     }
     return (url.host.toLowerCase() === "www.jw.org");
+}
+
+const requiresTitle = (link, title) => {
+  if(link.includes(mediaUrlKey) && !title) return true;
+
+  return false;
 }
 
 const randomIntFromInterval = (min=10000, max=99999) => {
@@ -74,7 +81,9 @@ window.onclick = function(event) {
 submitBtn.onclick = function(_) {
 
     const link_obj = document.getElementById('article-link');
+    const title_obj = document.getElementById('article-title');
     const link_value = link_obj.value;
+    const title_value = title_obj.value;
     if(!link_value) {
         alert( "Please provide a link!" );
         link_obj.focus();
@@ -84,6 +93,12 @@ submitBtn.onclick = function(_) {
     if(!isValidHttpUrl(link_value)) {
         alert( "Please provide a valid JW.org link!" );
         link_obj.focus();
+        return;
+    }
+
+    if(requiresTitle(link_value, title_value)) {
+        alert( "Please provide a title for media links!" );
+        title_obj.focus();
         return;
     }
     const json={
