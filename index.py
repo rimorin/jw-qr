@@ -49,7 +49,7 @@ TITLE_LENGTH_THRESHOLD = 60
 DEFAULT_FONT = "assets/fonts/NotoSans-Bold.ttf"
 URL_LENGTH_THRESHOLD = 180
 
-MEDIAITEM_URL_KEY = "mediaitems"
+MEDIAITEM_URL_KEYS = ["mediaitems", "videos"]
 DEFAULT_MEDIA_IMAGE = "https://assetsnffrgf-a.akamaihd.net/assets/m/802013129/univ/art/802013129_univ_sqr_md.jpg"
 DEFAULT_MEDIA_BANNER = "https://assetsnffrgf-a.akamaihd.net/assets/m/802013129/univ/art/802013129_univ_wsr_md.jpg"
 
@@ -368,7 +368,8 @@ def scrape_article(article_link):
 
 
 def get_default_link_data(article_link):
-    if MEDIAITEM_URL_KEY not in article_link:
+    is_media_link = any(key in article_link for key in MEDIAITEM_URL_KEYS)
+    if not is_media_link:
         return
 
     return {
