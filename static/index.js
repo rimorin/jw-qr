@@ -10,7 +10,8 @@ const designSlides = document.querySelectorAll(".slide");
 const maxSlide = designSlides.length - 1;
 const nextSlideBtn = document.getElementById("nextBtn");
 const prevSlideBtn = document.getElementById("prevBtn");
-const mediaUrlKeys = ["mediaitems", "VIDEO"];
+const mediaUrlKey = "mediaitems";
+const finderMediaKeys = ["finder", "VIDEO"];
 let currentSelectedSlide = 0;
 
 const isValidHttpUrl = string => {
@@ -28,9 +29,11 @@ const isValidHttpUrl = string => {
 }
 
 const requiresTitle = (link, title) => {
-  const isMediaKey = mediaUrlKeys.some(el => link.includes(el));
+  if(link.includes(mediaUrlKey) && !title) return true;
+
+  const isMediaKey = finderMediaKeys.every(el => link.includes(el));
   if(isMediaKey && !title) return true;
-  
+
   return false;
 }
 
