@@ -16,9 +16,9 @@
 
 ## How to use:
 
-   - Copy article from JW.org into your device clipboard
-   - Click on paste
-   - Click on generate to generate QR template in word document based on the image and title of the article
+   - Copy article from JW.org into your device clipboard.
+   - Click on paste.
+   - Click on generate to generate QR template in word document based on the image and title of the article.
 
 ## Technologies Used
 
