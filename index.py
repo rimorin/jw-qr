@@ -132,7 +132,7 @@ def qr_processor(
     return eval(f"gen_qr_{article_design}")(article_link, article_title)
 
 
-def gen_qr(article_link="", article_title="", with_logo=True, design=None):
+def gen_qr(article_link="", article_title="", design=None):
     if not article_link:
         return
 
@@ -150,9 +150,20 @@ def gen_qr(article_link="", article_title="", with_logo=True, design=None):
             404,
             description=f"Opps!! Something is wrong somewhere. Please try another link.",
         )
-    left_image = get_article_image(image_url=links.get("image", ""))
+    
+    logoName = "assets/images/logo-1.png"
+    if design == 1:
+        logoName = "assets/images/logo-2.png"
+    elif design == 2:
+        logoName = "assets/images/logo-3.png"
+
+    logo = Image.open(logoName)
+    left_image = logo.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
+    left_image = add_margin(
+        left_image, top=0, bottom=15, left=15, right=15, color=(250, 250, 250)
+    )
     right_image = get_qr_image(
-        article_link=article_link, with_logo=with_logo, design=design
+        article_link=article_link, with_logo=False
     )
     article_size = left_image.size
     complete_qr_image = Image.new(
@@ -180,133 +191,138 @@ def gen_qr(article_link="", article_title="", with_logo=True, design=None):
 def gen_qr_1(article_link="", article_title=""):
     return gen_qr(article_link=article_link, article_title=article_title)
 
+def gen_qr_2(article_link="", article_title=""):
+    return gen_qr(
+        article_link=article_link,
+        article_title=article_title,
+        design=1,
+    )
 
 def gen_qr_3(article_link="", article_title=""):
     return gen_qr(
         article_link=article_link,
         article_title=article_title,
-        with_logo=False,
-        design=1,
+        design=2,
     )
 
 
-def gen_qr_2(article_link="", article_title=""):
-    if not article_link:
-        return
+# def gen_qr_2(article_link="", article_title=""):
+#     if not article_link:
+#         return
 
-    result = urlparse(article_link)
-    domain_link = result.netloc.casefold()
-    if domain_link != EXPECTED_DOMAIN:
-        logger.warn("Invalid domain.")
-        abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
-    links = {}
-    try:
-        links = scrape_article(article_link=article_link)
-    except Exception as er:
-        logger.error("Error during scraping.", exc_info=True)
-        abort(
-            404,
-            description=f"Opps!! Something is wrong somewhere. Please try another link.",
-        )
-    left_image = get_article_image(
-        image_url=links.get("image", ""), article_url=article_link
-    )
-    logo = Image.open("assets/images/siteLogo-jworg.png")
-    right_image = logo.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
-    article_size = left_image.size
-    complete_qr_image = Image.new(
-        "RGB", (2 * article_size[0], article_size[1] + IMAGE_OFFSET), (250, 250, 250)
-    )
-    complete_qr_image.paste(left_image, (0, IMAGE_OFFSET))
-    complete_qr_image.paste(right_image, (article_size[0] + 10, IMAGE_OFFSET))
+#     result = urlparse(article_link)
+#     domain_link = result.netloc.casefold()
+#     if domain_link != EXPECTED_DOMAIN:
+#         logger.warn("Invalid domain.")
+#         abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
+#     links = {}
+#     try:
+#         links = scrape_article(article_link=article_link)
+#     except Exception as er:
+#         logger.error("Error during scraping.", exc_info=True)
+#         abort(
+#             404,
+#             description=f"Opps!! Something is wrong somewhere. Please try another link.",
+#         )
+#     left_image = get_article_image(
+#         image_url=links.get("image", ""), article_url=article_link
+#     )
+#     logo = Image.open("assets/images/siteLogo-jworg.png")
+#     right_image = logo.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
+#     article_size = left_image.size
+#     complete_qr_image = Image.new(
+#         "RGB", (2 * article_size[0], article_size[1] + IMAGE_OFFSET), (250, 250, 250)
+#     )
+#     complete_qr_image.paste(left_image, (0, IMAGE_OFFSET))
+#     complete_qr_image.paste(right_image, (article_size[0] + 10, IMAGE_OFFSET))
 
-    qr_title = article_title if article_title else links.get("title", "")
+#     qr_title = article_title if article_title else links.get("title", "")
 
-    draw_title(
-        image=complete_qr_image,
-        width=article_size[0],
-        title=qr_title,
-        lang=links.get("lang", "en"),
-    )
-    complete_qr_image = draw_border(image=complete_qr_image)
-    qr_file = io.BytesIO()
-    complete_qr_image.save(qr_file, "JPEG", quality=95)
-    qr_file.seek(0)
-    return qr_file
+#     draw_title(
+#         image=complete_qr_image,
+#         width=article_size[0],
+#         title=qr_title,
+#         lang=links.get("lang", "en"),
+#     )
+#     complete_qr_image = draw_border(image=complete_qr_image)
+#     qr_file = io.BytesIO()
+#     complete_qr_image.save(qr_file, "JPEG", quality=95)
+#     qr_file.seek(0)
+#     return qr_file
 
 
-def gen_qr_4(article_link="", article_title=""):
-    if not article_link:
-        return
+# def gen_qr_4(article_link="", article_title=""):
+#     if not article_link:
+#         return
 
-    result = urlparse(article_link)
-    domain_link = result.netloc.casefold()
-    if domain_link != EXPECTED_DOMAIN:
-        logger.warn("Invalid domain.")
-        abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
-    links = {}
-    try:
-        links = scrape_article(article_link=article_link)
-    except Exception as er:
-        logger.error("Error during scraping.", exc_info=True)
-        abort(
-            404,
-            description=f"Opps!! Something is wrong somewhere. Please try another link.",
-        )
-    response = get_link_data(link=links.get("banner", ""))
-    bg_file = io.BytesIO(response.content)
+#     result = urlparse(article_link)
+#     domain_link = result.netloc.casefold()
+#     if domain_link != EXPECTED_DOMAIN:
+#         logger.warn("Invalid domain.")
+#         abort(404, "Please enter a link from {EXPECTED_DOMAIN}.")
+#     links = {}
+#     try:
+#         links = scrape_article(article_link=article_link)
+#     except Exception as er:
+#         logger.error("Error during scraping.", exc_info=True)
+#         abort(
+#             404,
+#             description=f"Opps!! Something is wrong somewhere. Please try another link.",
+#         )
+#     response = get_link_data(link=links.get("banner", ""))
+#     bg_file = io.BytesIO(response.content)
 
-    banner_image = Image.open(bg_file)
-    banner_image = banner_image.resize(
-        ((ARTICLE_IMAGE_SIZE[0] * 2) - IMAGE_OFFSET, ARTICLE_IMAGE_SIZE[1]),
-        Image.ANTIALIAS,
-    )
-    cropped_banner_image = banner_image.crop(
-        (
-            banner_image.size[0] - ARTICLE_IMG_QR_SIZE[0],
-            banner_image.size[1] - ARTICLE_IMG_QR_SIZE[1],
-            banner_image.size[0],
-            banner_image.size[1],
-        )
-    )
-    cropped_image = io.BytesIO()
-    cropped_banner_image.save(cropped_image, format="PNG")
-    cropped_qr_image = segno.make(
-        prepare_link(article_link=article_link, force_shorten=True), error="h"
-    )
-    cropped_qr_file = io.BytesIO()
-    cropped_qr_image.to_artistic(
-        background=cropped_image, target=cropped_qr_file, kind="jpeg", border=0
-    )
-    new_image_file = Image.open(cropped_qr_file)
-    new_image_file = new_image_file.resize(ARTICLE_IMG_QR_SIZE, Image.ANTIALIAS)
-    image_position = (
-        banner_image.size[0] - new_image_file.size[0],
-        banner_image.size[1] - new_image_file.size[1],
-    )
-    banner_image.paste(new_image_file, image_position)
-    left_image = prepare_logo(basewidth=50, border=False)
-    image_position = (0, banner_image.size[1] - left_image.size[1])
-    banner_image.paste(left_image, image_position)
+#     banner_image = Image.open(bg_file)
+#     banner_image = banner_image.resize(
+#         ((ARTICLE_IMAGE_SIZE[0] * 2) - IMAGE_OFFSET, ARTICLE_IMAGE_SIZE[1]),
+#         Image.ANTIALIAS,
+#     )
+#     cropped_banner_image = banner_image.crop(
+#         (
+#             banner_image.size[0] - ARTICLE_IMG_QR_SIZE[0],
+#             banner_image.size[1] - ARTICLE_IMG_QR_SIZE[1],
+#             banner_image.size[0],
+#             banner_image.size[1],
+#         )
+#     )
+#     cropped_image = io.BytesIO()
+#     cropped_banner_image.save(cropped_image, format="PNG")
+#     cropped_qr_image = segno.make(
+#         prepare_link(article_link=article_link, force_shorten=True), error="h"
+#     )
+#     cropped_qr_file = io.BytesIO()
+#     cropped_qr_image.to_artistic(
+#         background=cropped_image, target=cropped_qr_file, kind="jpeg", border=0
+#     )
+#     new_image_file = Image.open(cropped_qr_file)
+#     new_image_file = new_image_file.resize(ARTICLE_IMG_QR_SIZE, Image.ANTIALIAS)
+#     image_position = (
+#         banner_image.size[0] - new_image_file.size[0],
+#         banner_image.size[1] - new_image_file.size[1],
+#     )
+#     banner_image.paste(new_image_file, image_position)
+#     left_image = prepare_logo(basewidth=50, border=False)
+#     image_position = (0, banner_image.size[1] - left_image.size[1])
+#     banner_image.paste(left_image, image_position)
 
-    qr_title = article_title if article_title else links.get("title", "")
-    draw_title(
-        image=banner_image,
-        width=ARTICLE_IMAGE_SIZE[0] - 25,
-        title=qr_title,
-        lang=links.get("lang", "en"),
-        with_outline=True,
-        title_pos=(0, 3),
-    )
-    banner_image = add_margin(
-        banner_image, top=5, bottom=5, left=5, right=5, color=(250, 250, 250)
-    )
-    banner_image = draw_border(image=banner_image)
-    qr_file = io.BytesIO()
-    # banner_image.save("test.jpg", "JPEG", quality=95)
-    banner_image.save(qr_file, "JPEG", quality=95)
-    qr_file.seek(0)
-    return qr_file
+#     qr_title = article_title if article_title else links.get("title", "")
+#     draw_title(
+#         image=banner_image,
+#         width=ARTICLE_IMAGE_SIZE[0] - 25,
+#         title=qr_title,
+#         lang=links.get("lang", "en"),
+#         with_outline=True,
+#         title_pos=(0, 3),
+#     )
+#     banner_image = add_margin(
+#         banner_image, top=5, bottom=5, left=5, right=5, color=(250, 250, 250)
+#     )
+#     banner_image = draw_border(image=banner_image)
+#     qr_file = io.BytesIO()
+#     # banner_image.save("test.jpg", "JPEG", quality=95)
+#     banner_image.save(qr_file, "JPEG", quality=95)
+#     qr_file.seek(0)
+#     return qr_file
 
 
 def get_proxy():
