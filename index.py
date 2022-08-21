@@ -386,6 +386,15 @@ def scrape_article(article_link):
 
 def get_default_link_data(article_link):
 
+    result = urlparse(article_link)
+    pathname = result.path
+    if not pathname or pathname == "/":
+        return {
+        "title": "JW.ORG",
+        "lang": "en",
+    }
+
+
     is_finder_link = FINDER_MEDIAITEM_URL_KEYS[0] in article_link
     if is_finder_link:
         if not all(key in article_link for key in FINDER_MEDIAITEM_URL_KEYS):
