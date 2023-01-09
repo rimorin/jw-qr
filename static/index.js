@@ -108,7 +108,8 @@ submitBtn.onclick = function(_) {
     const json={
         article_link : link_value,
         article_title : document.getElementById('article-title').value,
-        article_design : currentSelectedSlide + 1
+        article_design : currentSelectedSlide + 1,
+        require_letter: document.getElementById('require-letter').value === "on"
     };
     const options={
         method: "POST",
