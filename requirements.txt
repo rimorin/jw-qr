@@ -23,3 +23,4 @@ python-docx==0.8.11
 pyshorteners==1.0.1
 segno==1.5.2
 qrcode-artistic==2.1.0
+openai==0.26.0
