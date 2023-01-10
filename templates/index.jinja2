@@ -47,13 +47,14 @@
   <button id="nextBtn" class="slide-btn btn-next" type="button"><i class="fa fa-circle-arrow-right"></i></button>
   <button id="prevBtn" class="slide-btn btn-prev" type="button"><i class="fa fa-circle-arrow-left"></i></button>
 </div>
-<div class="sample-letter"><label>Include sample letter?</label><input type="checkbox" id="require-letter"></input>
+<div class="sample-letter"><label>(beta) Include sample letter?</label><input type="checkbox" id="require-letter" value=false></input>
 </div>
 <br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button id="submitBtn" type="button" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
 </div>
 <form/>
 {% include 'notes.jinja2' %}
+{% include 'openai.jinja2' %}
 {% endblock %}
 <script type="text/javascript" src="{{ url_for('static', filename='download.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>

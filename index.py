@@ -670,7 +670,7 @@ def generate_sample_letter(article_link):
 
     response = openai.Completion.create(
         model="text-davinci-003",
-        prompt=f"Summarise and write a bible based letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code for more information.",
+        prompt=f"Write a short and scriptural letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code for more information.",
         temperature=0.6,
         max_tokens=256,
         top_p=1,

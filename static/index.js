@@ -1,8 +1,10 @@
 const paste = document.getElementById('paste');
 const clearBtn = document.getElementById('clear');
 const notesModal = document.getElementById("notesModal");
+const aiModal = document.getElementById("aiModal");
 const infoBtn = document.getElementById("infoBtn");
-const modalCloseBtn = document.getElementById("modalCloseBtn");
+const notesModalCloseBtn = document.getElementById("notesModalCloseBtn");
+const aiModalCloseBtn = document.getElementById("aiModalCloseBtn");
 const submitBtn = document.getElementById("submitBtn");
 const loader = document.getElementById("loader");
 const MIMETYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -71,8 +73,12 @@ infoBtn.onclick = function() {
 }
 
 // When the user clicks on <span> (x), close the modal
-modalCloseBtn.onclick = function() {
+notesModalCloseBtn.onclick = function() {
     notesModal.style.display = "none";
+}
+
+aiModalCloseBtn.onclick = function() {
+  aiModal.style.display = "none";
 }
 
 // When the user clicks anywhere outside of the modal, close it
@@ -80,14 +86,19 @@ window.onclick = function(event) {
     if (event.target == notesModal) {
         notesModal.style.display = "none";
     }
+    if (event.target == aiModal) {
+      aiModal.style.display = "none";
+  }
 }
 
 submitBtn.onclick = function(_) {
 
     const link_obj = document.getElementById('article-link');
     const title_obj = document.getElementById('article-title');
+    const letter_obj = document.getElementById('require-letter');
     const link_value = link_obj.value;
     const title_value = title_obj.value;
+    const isLetterRequired = letter_obj.checked;
     if(!link_value) {
         alert( "Please provide a link!" );
         link_obj.focus();
@@ -109,7 +120,7 @@ submitBtn.onclick = function(_) {
         article_link : link_value,
         article_title : document.getElementById('article-title').value,
         article_design : currentSelectedSlide + 1,
-        require_letter: document.getElementById('require-letter').value === "on"
+        require_letter: isLetterRequired
     };
     const options={
         method: "POST",
@@ -124,6 +135,7 @@ submitBtn.onclick = function(_) {
         }
         return response.blob();
     }).then(blob=>{
+        if(isLetterRequired) aiModal.style.display = "block";
         download(blob, `QR${urlToHash(link_value)}.docx`, MIMETYPE);
     }).catch(err=> {
         alert("Opps!! Something is wrong somewhere. Please try another link.");
