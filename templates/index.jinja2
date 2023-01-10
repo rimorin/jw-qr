@@ -12,7 +12,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.jwqr.live" />
     <meta property="og:image" content="https://www.jwqr.live/favicon_io/favicon-32x32.png" />
-    <title>QR Generator for JW.ORG</title>
+    <title>QR & Letter Generator for JW.ORG</title>
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}">
@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome/css/all.min.css') }}">
 </head><body>
 {% block content %}
-<div id="loader" class="loader loader-default" data-text="Generating QR Template" data-blink></div>
+<div id="loader" class="loader loader-default" data-text="Processing Request" data-blink></div>
 <div id="infoBtn" class="btn" style="cursor: pointer;">
   <i class="fa fa-circle-info"></i>
 </div>
@@ -47,11 +47,14 @@
   <button id="nextBtn" class="slide-btn btn-next" type="button"><i class="fa fa-circle-arrow-right"></i></button>
   <button id="prevBtn" class="slide-btn btn-prev" type="button"><i class="fa fa-circle-arrow-left"></i></button>
 </div>
+<div class="sample-letter"><label>(beta) Include sample letter?</label><input type="checkbox" id="require-letter" value=false></input>
+</div>
 <br>
 <div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button id="submitBtn" type="button" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
 </div>
 <form/>
 {% include 'notes.jinja2' %}
+{% include 'openai.jinja2' %}
 {% endblock %}
 <script type="text/javascript" src="{{ url_for('static', filename='download.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>

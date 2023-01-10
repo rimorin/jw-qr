@@ -123,3 +123,9 @@ form {
     top: 45%;
     right: 3.5%;
 }
+
+.sample-letter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

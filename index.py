@@ -28,6 +28,7 @@ from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers import (
     VerticalBarsDrawer,
 )
+import openai
 
 logging.basicConfig(
     level=logging.INFO,
@@ -98,12 +99,16 @@ DEFAULT_HEADER = {
 
 DEFAULT_QR_TEMPLATE_DESIGN_CODE = 1
 
+OPEN_AI_API_KEY = os.environ.get("OPEN_AI_API_KEY", "")
+
+openai.api_key = OPEN_AI_API_KEY
+
 app = Flask(__name__)
 logger = app.logger
 shortener = pyshorteners.Shortener(timeout=TINYURL_TIMEOUT_SECONDS)
 
 
-def gen_doc(img):
+def gen_doc(img, letter_content=""):
     document = Document()
     section = document.sections[0]
     section.header.is_linked_to_previous = True
@@ -120,6 +125,10 @@ def gen_doc(img):
             paragraph = table.cell(row, col).paragraphs[0]
             run = paragraph.add_run()
             run.add_picture(img, height=Inches(1))
+
+    if letter_content:
+        document.add_page_break()
+        paragraph = document.add_paragraph(letter_content)
     word_file = io.BytesIO()
     document.save(word_file)
     word_file.seek(0)
@@ -150,7 +159,7 @@ def gen_qr(article_link="", article_title="", design=None):
             404,
             description=f"Opps!! Something is wrong somewhere. Please try another link.",
         )
-    
+
     logoName = "assets/images/logo-1.png"
     if design == 1:
         logoName = "assets/images/logo-2.png"
@@ -162,9 +171,7 @@ def gen_qr(article_link="", article_title="", design=None):
     left_image = add_margin(
         left_image, top=0, bottom=15, left=15, right=15, color=(250, 250, 250)
     )
-    right_image = get_qr_image(
-        article_link=article_link, with_logo=False
-    )
+    right_image = get_qr_image(article_link=article_link, with_logo=False)
     article_size = left_image.size
     complete_qr_image = Image.new(
         "RGB", (2 * article_size[0], article_size[1] + IMAGE_OFFSET), (250, 250, 250)
@@ -191,12 +198,14 @@ def gen_qr(article_link="", article_title="", design=None):
 def gen_qr_1(article_link="", article_title=""):
     return gen_qr(article_link=article_link, article_title=article_title)
 
+
 def gen_qr_2(article_link="", article_title=""):
     return gen_qr(
         article_link=article_link,
         article_title=article_title,
         design=1,
     )
+
 
 def gen_qr_3(article_link="", article_title=""):
     return gen_qr(
@@ -390,10 +399,9 @@ def get_default_link_data(article_link):
     pathname = result.path
     if not pathname or pathname == "/":
         return {
-        "title": "JW.ORG",
-        "lang": "en",
-    }
-
+            "title": "JW.ORG",
+            "lang": "en",
+        }
 
     is_finder_link = FINDER_MEDIAITEM_URL_KEYS[0] in article_link
     if is_finder_link:
@@ -655,6 +663,23 @@ def singleline_text(
     drawing.text(final_tuple, text, font=font, fill=fill)
 
 
+def generate_sample_letter(article_link):
+
+    if not article_link:
+        return None
+
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=f"Write a short and scriptural letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code for more information.",
+        temperature=0.6,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+    return response.choices[0].text
+
+
 @app.route("/robots.txt")
 @app.route("/sitemap.xml")
 @app.route("/favicon_io/favicon-32x32.png")
@@ -669,8 +694,9 @@ def index():
         article_link = data.get("article_link", "")
         article_title = data.get("article_title", "")
         article_design = data.get("article_design", DEFAULT_QR_TEMPLATE_DESIGN_CODE)
+        require_letter = data.get("require_letter", False)
         logger.info(
-            f"Attempting to generate QR document. link={article_link}, title={article_title}, design={article_design}"
+            f"Attempting to generate QR document. link={article_link}, title={article_title}, design={article_design}, letter required={require_letter}"
         )
         process_start_time = time.time()
         img_file = qr_processor(
@@ -678,7 +704,10 @@ def index():
             article_title=article_title,
             article_design=article_design,
         )
-        word_doc = gen_doc(img=img_file)
+        letter_content = (
+            generate_sample_letter(article_link) if require_letter else None
+        )
+        word_doc = gen_doc(img=img_file, letter_content=letter_content)
         process_end_time = time.time()
         logger.info(
             f"Generated QR document. link={article_link}, title={article_title}, process_time={int(process_end_time-process_start_time)}s"
