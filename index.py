@@ -21,6 +21,7 @@ from flask import (
 )
 from docx import Document
 from docx.shared import Inches, Mm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 import logging
 import time
 import segno
@@ -128,7 +129,13 @@ def gen_doc(img, letter_content=""):
 
     if letter_content:
         document.add_page_break()
-        paragraph = document.add_paragraph(letter_content)
+        document.add_paragraph(letter_content)
+        document.add_paragraph("\n\n")
+        new_paragraph = document.add_paragraph()
+        run = new_paragraph.add_run()
+        picture = run.add_picture(img, height=Inches(1))
+        picture.align = WD_ALIGN_PARAGRAPH.RIGHT
+        new_paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     word_file = io.BytesIO()
     document.save(word_file)
     word_file.seek(0)
@@ -670,9 +677,9 @@ def generate_sample_letter(article_link):
 
     response = openai.Completion.create(
         model="text-davinci-003",
-        prompt=f"Write a short and scriptural letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code for more information.",
+        prompt=f"Write a scriptural letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code or visit our website www.JW.org for more information.",
         temperature=0.6,
-        max_tokens=256,
+        max_tokens=512,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0,
