@@ -167,17 +167,12 @@ def gen_qr(article_link="", article_title="", design=None):
             description=f"Opps!! Something is wrong somewhere. Please try another link.",
         )
 
-    logoName = "assets/images/logo-1.png"
-    if design == 1:
-        logoName = "assets/images/logo-2.png"
-    elif design == 2:
-        logoName = "assets/images/logo-3.png"
+    left_image = None
+    if design is not None:
+        left_image = get_logo_image(logo=f"assets/images/logo-{design}.png")
+    else:
+        left_image = get_article_image(image_url=links.get("image", ""))
 
-    logo = Image.open(logoName)
-    left_image = logo.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
-    left_image = add_margin(
-        left_image, top=0, bottom=15, left=15, right=15, color=(250, 250, 250)
-    )
     right_image = get_qr_image(article_link=article_link, with_logo=False)
     article_size = left_image.size
     complete_qr_image = Image.new(
@@ -196,6 +191,7 @@ def gen_qr(article_link="", article_title="", design=None):
     )
     complete_qr_image = draw_border(image=complete_qr_image)
     qr_file = io.BytesIO()
+    # For testing purposes
     # complete_qr_image.save("test.jpg", "JPEG", quality=95)
     complete_qr_image.save(qr_file, "JPEG", quality=95)
     qr_file.seek(0)
@@ -478,6 +474,15 @@ def extract_tags(data):
     }
 
 
+def get_logo_image(logo):
+    logo_image = Image.open(logo)
+    logo_image = logo_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
+    logo_image = add_margin(
+        logo_image, top=0, bottom=15, left=15, right=15, color=(250, 250, 250)
+    )
+    return logo_image
+
+
 def get_article_image(image_url, article_url=None):
     webpage_image_bytes = None
     if article_url:
@@ -493,6 +498,18 @@ def get_article_image(image_url, article_url=None):
     else:
         response = get_link_data(link=image_url)
         webpage_image_bytes = io.BytesIO(response.content)
+
+    generative_image = Image.open(webpage_image_bytes)
+    image_buffer = io.BytesIO()
+    generative_image.save(image_buffer, "PNG")
+    result = openai.Image.create_variation(
+        image=image_buffer.getvalue(),
+        n=1,
+    )
+
+    response = get_link_data(link=result.data[0].url)
+    webpage_image_bytes = io.BytesIO(response.content)
+
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
     article_image = add_margin(
