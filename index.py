@@ -29,7 +29,11 @@ from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers import (
     VerticalBarsDrawer,
 )
-import openai
+
+# import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -99,10 +103,6 @@ DEFAULT_HEADER = {
 }
 
 DEFAULT_QR_TEMPLATE_DESIGN_CODE = 1
-
-OPEN_AI_API_KEY = os.environ.get("OPEN_AI_API_KEY", "")
-
-openai.api_key = OPEN_AI_API_KEY
 
 app = Flask(__name__)
 logger = app.logger
@@ -392,7 +392,7 @@ def scrape_article(article_link):
     default_link = get_default_link_data(article_link=article_link)
     if default_link:
         return default_link
-    page_response = get_link_data(link=article_link, use_api=True)
+    page_response = get_link_data(link=article_link)
     return generate_tags(page_response, article_link)
 
 
@@ -502,7 +502,7 @@ def get_article_image(image_url, article_url=None):
     generative_image = Image.open(webpage_image_bytes)
     image_buffer = io.BytesIO()
     generative_image.save(image_buffer, "PNG")
-    result = openai.Image.create_variation(
+    result = client.images.create_variation(
         model="dall-e-2",
         image=image_buffer.getvalue(),
         n=1,
@@ -693,16 +693,29 @@ def generate_sample_letter(article_link):
     if not article_link:
         return None
 
-    response = openai.Completion.create(
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
-        prompt=f"Write a scriptural letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code or visit our website www.JW.org for more information.",
-        temperature=0.6,
-        max_tokens=512,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. Your task is to generate a kind, polite, and respectful letter.",
+            },
+            {
+                "role": "user",
+                "content": "Use the information found in the following article for the letter content.",
+            },
+            {"role": "user", "content": f"The article link is: {article_link}"},
+            {
+                "role": "user",
+                "content": "Always use Jehovah as God's name in the letter.",
+            },
+            {
+                "role": "user",
+                "content": "At the conclusion of the letter, inform the reader that they can scan the QR code or visit our website www.JW.org for more information.",
+            },
+        ],
     )
-    return response.choices[0].text
+    return response.choices[0].message.content
 
 
 @app.route("/robots.txt")
