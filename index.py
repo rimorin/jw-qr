@@ -503,6 +503,7 @@ def get_article_image(image_url, article_url=None):
     image_buffer = io.BytesIO()
     generative_image.save(image_buffer, "PNG")
     result = openai.Image.create_variation(
+        model="dall-e-2",
         image=image_buffer.getvalue(),
         n=1,
     )
@@ -693,7 +694,7 @@ def generate_sample_letter(article_link):
         return None
 
     response = openai.Completion.create(
-        model="text-davinci-003",
+        model="gpt-3.5-turbo-0125",
         prompt=f"Write a scriptural letter to my neighbour using the information found in, {article_link}. Always use Jehovah as God's name. At the conclusion of the letter, inform the reader that they can scan the QR code or visit our website www.JW.org for more information.",
         temperature=0.6,
         max_tokens=512,
