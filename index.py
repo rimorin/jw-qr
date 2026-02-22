@@ -1,4 +1,5 @@
 import io
+import base64
 import requests
 import qrcode
 import lxml
@@ -502,14 +503,32 @@ def get_article_image(image_url, article_url=None):
     generative_image = Image.open(webpage_image_bytes)
     image_buffer = io.BytesIO()
     generative_image.save(image_buffer, "PNG")
-    result = client.images.create_variation(
-        model="dall-e-2",
-        image=image_buffer.getvalue(),
-        n=1,
+    image_buffer.seek(0)
+    result = client.images.edit(
+        model="gpt-image-1.5",
+        image=("image.png", image_buffer, "image/png"),
+        prompt=(
+            "Reimagine this image as a richly painted artwork — preserve the exact composition, "
+            "all subjects, faces, and scene layout without any changes. "
+            "Blend five master painting traditions for the visual treatment only: "
+            "Da Vinci's sfumato (soft smoky light-to-shadow transitions, atmospheric depth, "
+            "chiaroscuro interplay between luminous highlights and velvety shadow); "
+            "Raphael's warm golden luminosity (harmonious balanced color, gentle radiant glow, "
+            "serene incarnato warmth across surfaces); "
+            "Michelangelo's sculptural chiaroscuro (dramatic deep shadows, powerful tonal contrast, "
+            "three-dimensional dimensionality with terribilità grandeur); "
+            "Van Gogh's expressive impasto brushwork (visible swirling directional strokes, "
+            "vibrant saturated hues, emotional color dynamism with textured paint surface); "
+            "and Picasso's bold tonal geometry (structured color planes, strong chromatic contrast, "
+            "faceted light organization). "
+            "Render in warm ambers, ochres, and deep shadows with rich oil-painting texture throughout. "
+            "Do not add text, logos, watermarks, or alter any subject placement."
+        ),
+        input_fidelity="high",
+        quality="high",
     )
 
-    response = get_link_data(link=result.data[0].url)
-    webpage_image_bytes = io.BytesIO(response.content)
+    webpage_image_bytes = io.BytesIO(base64.b64decode(result.data[0].b64_json))
 
     article_image = Image.open(webpage_image_bytes)
     article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
@@ -693,29 +712,33 @@ def generate_sample_letter(article_link):
     if not article_link:
         return None
 
-    response = client.chat.completions.create(
-        model="gpt-4o-2024-11-20",
-        messages=[
+    response = client.responses.create(
+        model="gpt-4.1",
+        tools=[
             {
-                "role": "system",
-                "content": "You are a helpful assistant. Your task is to generate a kind, polite, and respectful letter.",
-            },
-            {
-                "role": "user",
-                "content": "Use the information found in the following article for the letter content.",
-            },
-            {"role": "user", "content": f"The article link is: {article_link}"},
-            {
-                "role": "user",
-                "content": "Always use Jehovah as God's name in the letter.",
-            },
-            {
-                "role": "user",
-                "content": "At the conclusion of the letter, inform the reader that they can scan the QR code or visit our website www.JW.org for more information.",
-            },
+                "type": "web_search",
+                "filters": {"allowed_domains": ["jw.org"]},
+            }
         ],
+        instructions=(
+            "You are a Jehovah's Witness writing a personal letter to a householder met during the ministry.\n\n"
+            "Task: Write a short, heartfelt letter (2–3 paragraphs) based on the content of the provided JW.org article.\n\n"
+            "Instructions:\n"
+            "- Begin with 'Dear Neighbour,'.\n"
+            "- Write as if personally addressed to the householder — warm, genuine, and neighbourly.\n"
+            "- Always refer to God as 'Jehovah'.\n"
+            "- Refer to the source only as 'an article' — never 'Watchtower article' or any publication name.\n"
+            "- Include only 1–2 scriptures from the article. Do not quote multiple scriptures.\n"
+            "- Do not include any hyperlinks, URLs, or source citations inline.\n"
+            "- Tone: warm, sincere, and encouraging — never preachy or pressuring.\n"
+            "- Structure: warm greeting → share a key insight or hope from the article → brief personal encouragement → closing callout.\n"
+            "- Close by inviting the reader to scan the QR code or visit www.JW.org for more information.\n"
+            "- Length: 2–3 short paragraphs only.\n"
+            "- Do not include a sender name, date, or address block."
+        ),
+        input=f"Search and read the article at this link, then write the letter: {article_link}",
     )
-    return response.choices[0].message.content
+    return response.output_text
 
 
 @app.route("/robots.txt")
