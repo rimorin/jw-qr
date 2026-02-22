@@ -45,7 +45,7 @@ logging.basicConfig(
 TINYURL_TIMEOUT_SECONDS = 5
 IMAGE_TAG = "og:image"
 TITLE_TAG = "og:title"
-IMAGE_OFFSET = 45
+IMAGE_OFFSET = 65
 ARTICLE_IMAGE_SIZE = (160, 160)
 ARTICLE_QR_SIZE = (180, 180)
 ARTICLE_IMG_QR_SIZE = (120, 120)
@@ -477,7 +477,7 @@ def extract_tags(data):
 
 def get_logo_image(logo):
     logo_image = Image.open(logo)
-    logo_image = logo_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
+    logo_image = logo_image.resize(ARTICLE_IMAGE_SIZE, Image.Resampling.LANCZOS)
     logo_image = add_margin(
         logo_image, top=0, bottom=15, left=15, right=15, color=(250, 250, 250)
     )
@@ -531,7 +531,7 @@ def get_article_image(image_url, article_url=None):
     webpage_image_bytes = io.BytesIO(base64.b64decode(result.data[0].b64_json))
 
     article_image = Image.open(webpage_image_bytes)
-    article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.ANTIALIAS)
+    article_image = article_image.resize(ARTICLE_IMAGE_SIZE, Image.Resampling.LANCZOS)
     article_image = add_margin(
         article_image, top=0, bottom=15, left=15, right=15, color=(250, 250, 250)
     )
@@ -542,7 +542,7 @@ def prepare_logo(basewidth=140, border=True):
     logo = Image.open("assets/images/siteLogo-jworg.png")
     wpercent = basewidth / float(logo.size[0])
     hsize = int((float(logo.size[1]) * float(wpercent)))
-    logo = logo.resize((basewidth, hsize), Image.ANTIALIAS)
+    logo = logo.resize((basewidth, hsize), Image.Resampling.LANCZOS)
     if border == False:
         return logo
     return draw_border(logo, size=(6, 6, 6, 6), color="white")
@@ -563,7 +563,7 @@ def get_qr_image(article_link, with_logo=True, design=None):
         logo = prepare_logo()
         pos = ((QRimg.size[0] - logo.size[0]) // 2, (QRimg.size[1] - logo.size[1]) // 2)
         QRimg.paste(logo, pos)
-    QRimg = QRimg.resize(ARTICLE_QR_SIZE, Image.ANTIALIAS)
+    QRimg = QRimg.resize(ARTICLE_QR_SIZE, Image.Resampling.LANCZOS)
     return QRimg
 
 
@@ -671,19 +671,19 @@ def singleline_text(
     font_path = font.path
     shadowcolor = "white"
 
-    text_width = font.getsize(text)[0]
+    text_width = font.getlength(text)
     while text_width > container_width:
         # iterate until the text width is smaller than the assigned width of the text area
         fontsize -= 1
         font = ImageFont.truetype(font_path, fontsize)
-        text_width = font.getsize(text)[0]
+        text_width = font.getlength(text)
 
     # optionally de-increment to be sure it is less than criteria
     fontsize -= 1
     font = ImageFont.truetype(font_path, fontsize)
-    updated_font_size = font.getsize(text)
-    text_width = updated_font_size[0]
-    text_height = updated_font_size[1]
+    bbox = font.getbbox(text)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
     y_offset = (int(container_height) / 2) - (text_height / 2)
     if alignment == "center":
         x_offset = (int(container_width) / 2) - (text_width / 2)
