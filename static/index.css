@@ -1,60 +1,95 @@
-form {
+* {
     box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    background-color: #f5f5f5;
+    font-family: sans-serif;
+}
+
+main {
+    width: 100%;
+    max-width: 420px;
+}
+
+form {
     padding: 1rem;
     border-radius: 1rem;
     background-color: hsl(0, 0%, 100%);
     border: 4px solid hsl(0, 0%, 90%);
     display: grid;
     grid-template-columns: 1fr;
+    gap: 0.75rem;
 }
 
-.main-container {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+.form-field {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    text-align: left;
+}
+
+.form-field label {
+    font-weight: bold;
+}
+
+.form-field input[type="text"] {
+    width: 100%;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.logo-container {
+    text-align: center;
+}
+
+#infoBtn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.4rem;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0;
 }
 
 .modal {
     display: none;
-    /* Hidden by default */
     position: fixed;
-    /* Stay in place */
     z-index: 1;
-    /* Sit on top */
     left: 0;
     top: 0;
     width: 100%;
-    /* Full width */
     height: 100%;
-    /* Full height */
     overflow: auto;
-    /* Enable scroll if needed */
-    background-color: rgb(0, 0, 0);
-    /* Fallback color */
     background-color: rgba(0, 0, 0, 0.4);
-    /* Black w/ opacity */
 }
 
-/* Modal Content/Box */
 .modal-content {
     background-color: #fefefe;
     margin: 15% auto;
-    /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    /* Could be more or less, depending on screen size */
 }
 
-.modal-open {
-    padding: 0;
-    border: none;
-    background: none;
-}
-
-/* The Close Button */
 .modal-close {
     color: #aaa;
     float: right;
@@ -69,30 +104,15 @@ form {
     cursor: pointer;
 }
 
-.alert-box {
-    padding: 20px;
-    background-color: #2196F3;
-    color: white;
-}
-
-.alert-closebtn {
-    margin-left: 15px;
-    color: white;
-    font-weight: bold;
-    float: right;
-    font-size: 22px;
-    line-height: 20px;
-    cursor: pointer;
-    opacity: 0.70;
-}
-
-.alert-closebtn:hover {
-    color: black;
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
 }
 
 .slider {
-    width: 100%;
-    max-width: 800px;
+    flex: 1;
     height: 150px;
     position: relative;
     overflow: hidden;
@@ -101,44 +121,33 @@ form {
 
 .slide {
     width: 100%;
-    max-width: 800px;
     height: 150px;
     position: absolute;
     transition: all 0.5s;
 }
 
 .slide img {
-    width: 85%;
+    width: 100%;
     height: 100%;
-    object-fit: scale-down;
+    object-fit: contain;
 }
 
 .slide-btn {
-    position: absolute;
-    width: 20px;
+    flex-shrink: 0;
     border: none;
-    z-index: 10px;
     cursor: pointer;
     background-color: transparent;
-    font-size: 15px;
+    font-size: 1.5rem;
+    padding: 0;
 }
 
 .btn:active {
     transform: scale(1.1);
 }
 
-.btn-prev {
-    top: 45%;
-    left: 3.5%;
-}
-
-.btn-next {
-    top: 45%;
-    right: 3.5%;
-}
-
 .sample-letter {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
 }

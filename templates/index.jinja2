@@ -1,59 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="qr, qr code, jw, jw.org, ministry, preaching, scan">
-    <meta name="author" content="John Eric Rimorin Kwan">
-    <meta name="description" content="A QR template generator for JW.org that comes with beautiful designs.Templates are generated in word document format which is printer friendly. Simply print, cut and paste onto your letters.">
-    <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="QR Generator for JW.org" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.jwqr.live" />
-    <meta property="og:image" content="https://www.jwqr.live/favicon_io/favicon-32x32.png" />
-    <title>QR & Letter Generator for JW.ORG</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css-loader.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome/css/all.min.css') }}">
-</head><body>
+{% extends "base.jinja2" %}
+
+{#
+  Macro: form_field
+  Renders a labelled text input with consistent markup.
+  Parameters:
+    field_id  – the input's id/name attribute
+    label     – visible label text
+    required  – whether the field is required (default false)
+    placeholder – placeholder text (default "")
+#}
+{% macro form_field(field_id, label, required=false, placeholder="", autocomplete="", inputmode="") %}
+<div class="form-field">
+  <label for="{{ field_id }}">{{ label }}</label>
+  <input
+    type="text"
+    id="{{ field_id }}"
+    name="{{ field_id }}"
+    placeholder="{{ placeholder }}"
+    {% if required %}required{% endif %}
+    {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+    {% if inputmode %}inputmode="{{ inputmode }}"{% endif %}
+  >
+</div>
+{% endmacro %}
+
 {% block content %}
-<div id="loader" class="loader loader-default" data-text="Processing Request" data-blink></div>
-<div id="infoBtn" class="btn" style="cursor: pointer;">
-  <i class="fa fa-circle-info"></i>
-</div>
-<div class="main-container">
-  <div style="text-align:center;"><img height="100px" width="100px" src="{{ url_for('static', filename='jwqr.png') }}"></div>
-<form target="_blank" action="{{ url_for("index")}}" method="post" style="text-align: center">
-<div><label><strong>Enter article link</strong></label></div><br>
-<input type="text" id="article-link" name="article-link" placeholder="Paste Link Here" required><br>
-<label><strong>Enter title</strong></label><br>
-<input type="text" id="article-title" name="article-title" placeholder="Optional"><br>
-<div><label><strong>Select Design</strong></label></div>
-<div class="slider">
-  <div class="slide">
-    <img alt="QR template 1" src="{{ url_for('static', filename='designs/design_1.jpg') }}"/>
-  </div>
-  <div class="slide">
-    <img alt="QR template 2" src="{{ url_for('static', filename='designs/design_2.jpg') }}"/>
-  </div>
-  <button id="nextBtn" class="slide-btn btn-next" type="button"><i class="fa fa-circle-arrow-right"></i></button>
-  <button id="prevBtn" class="slide-btn btn-prev" type="button"><i class="fa fa-circle-arrow-left"></i></button>
-</div>
-<div class="sample-letter"><label>Include sample letter?</label>&nbsp;<input type="checkbox" id="require-letter" value=false></input>
-</div>
-<br>
-<div><button class="btn" id="paste" type="button"><i class="fa fa-paste"></i> Paste</button> <button class="btn" id="clear" type="button"><i class="fa fa-trash"></i> Clear</button> <button id="submitBtn" type="button" class="btn"><i class="fa fa-qrcode"></i> Generate</button></div>
-</div>
-<form/>
+<div id="loader" class="loader loader-default" data-text="Processing Request" data-blink
+     role="status" aria-live="polite" aria-label="Processing request"></div>
+<button id="infoBtn" class="icon-btn" aria-label="Help">
+  <i class="fa fa-circle-info" aria-hidden="true"></i>
+</button>
+<main>
+  <form action="{{ url_for('index') }}" method="post" aria-label="QR code generator">
+    <div class="logo-container">
+      <img height="100" width="100" src="{{ url_for('static', filename='jwqr.png') }}" alt="JWQR logo">
+    </div>
+    {{ form_field('article-link', 'Enter article link', required=true, placeholder='Paste Link Here', autocomplete='url', inputmode='url') }}
+    {{ form_field('article-title', 'Enter title', placeholder='Optional', autocomplete='off') }}
+    <div class="form-field">
+      <label>Select Design</label>
+      <div class="slider-wrapper">
+        <button id="prevBtn" class="slide-btn" type="button" aria-label="Previous design">
+          <i class="fa fa-circle-arrow-left" aria-hidden="true"></i>
+        </button>
+        <div class="slider">
+          <div class="slide">
+            <img alt="QR template 1" src="{{ url_for('static', filename='designs/design_1.jpg') }}"/>
+          </div>
+          <div class="slide">
+            <img alt="QR template 2" src="{{ url_for('static', filename='designs/design_2.jpg') }}"/>
+          </div>
+        </div>
+        <button id="nextBtn" class="slide-btn" type="button" aria-label="Next design">
+          <i class="fa fa-circle-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+    <div class="sample-letter">
+      <label for="require-letter">Include sample letter?</label>
+      <input type="checkbox" id="require-letter">
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="paste" type="button">
+        <i class="fa fa-paste" aria-hidden="true"></i> Paste
+      </button>
+      <button class="btn" id="clear" type="button">
+        <i class="fa fa-trash" aria-hidden="true"></i> Clear
+      </button>
+      <button id="submitBtn" type="button" class="btn">
+        <i class="fa fa-qrcode" aria-hidden="true"></i> Generate
+      </button>
+    </div>
+  </form>
+</main>
 {% include 'notes.jinja2' %}
 {% include 'openai.jinja2' %}
 {% endblock %}
-<script type="text/javascript" src="{{ url_for('static', filename='download.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
-</body>
-</html>
