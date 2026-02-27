@@ -17,6 +17,9 @@ const mediaUrlKey = "mediaitems";
 const finderMediaKeys = ["finder", "VIDEO"];
 let currentSelectedSlide = 0;
 
+const DESIGN_LABELS = { 1: "ai_gen", 2: "fixed" };
+const getDesignLabel = (slideIndex) => DESIGN_LABELS[slideIndex + 1];
+
 const isValidHttpUrl = (string) => {
   let url;
 
@@ -135,14 +138,20 @@ submitBtn.onclick = function (_) {
       return response.blob();
     })
     .then((blob) => {
+      umami?.track?.("qr_generate", { design: getDesignLabel(json.article_design - 1), require_letter: isLetterRequired });
       if (isLetterRequired || isGenerativeImage)
         aiModal.style.display = "block";
       download(blob, `QR${urlToHash(link_value)}.docx`, MIMETYPE);
     })
     .catch((err) => {
+      umami?.track?.("qr_generate_error");
       alert("Opps!! Something is wrong somewhere. Please try another link.");
     });
 };
+
+document.getElementById("require-letter").addEventListener("change", function () {
+  umami?.track?.("letter_toggled", { enabled: this.checked });
+});
 
 // loop through slides and set each slides translateX
 designSlides.forEach((slide, indx) => {
@@ -156,6 +165,7 @@ nextSlideBtn.onclick = function () {
   } else {
     currentSelectedSlide++;
   }
+  umami?.track?.("design_changed", { design: getDesignLabel(currentSelectedSlide) });
   //   move slide by -100%
   designSlides.forEach((slide, indx) => {
     slide.style.transform = `translateX(${
@@ -171,6 +181,7 @@ prevSlideBtn.onclick = function () {
   } else {
     currentSelectedSlide--;
   }
+  umami?.track?.("design_changed", { design: getDesignLabel(currentSelectedSlide) });
   //   move slide by 100%
   designSlides.forEach((slide, indx) => {
     slide.style.transform = `translateX(${
