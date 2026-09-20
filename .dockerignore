@@ -1,0 +1,12 @@
+# The Dockerfile is single-stage and uses "ADD . /app/", so anything left in the
+# build context ships inside the published image. .env holds OPENAI_API_KEY.
+.env
+.env.*
+.git
+.gitignore
+__pycache__
+*.pyc
+.jwqr
+.jw_qr
+.python-version
+dev.sh
